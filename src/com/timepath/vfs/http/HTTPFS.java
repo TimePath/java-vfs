@@ -131,7 +131,7 @@ public class HTTPFS extends VFSStub implements Runnable {
                                     stream.close();
                                 }
                             } else {
-                                out(pw, http + " 404 NOT FOUND");
+                                out(pw, http + " 404 Not Found");
                                 out(pw, "");
                             }
                         }

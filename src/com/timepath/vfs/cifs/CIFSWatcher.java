@@ -1,15 +1,10 @@
 package com.timepath.vfs.cifs;
 
 import com.timepath.vfs.SimpleVFile.FileChangeListener;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.InetAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
+import java.io.*;
+import java.net.*;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -42,7 +37,7 @@ public class CIFSWatcher {
         return instance;
     }
 
-    private ArrayList<FileChangeListener> listeners = new ArrayList<FileChangeListener>();
+    private List<FileChangeListener> listeners = new LinkedList<FileChangeListener>();
 
     public void addFileChangeListener(FileChangeListener listener) {
         listeners.add(listener);

@@ -207,7 +207,7 @@ public class FTPFS extends VFSStub implements Runnable {
         private String cwd = "/";
 
         private FTPConnection(Socket s) {
-            LOG.log(Level.INFO, "{0} connected.", s);
+            LOG.log(Level.FINE, "{0} connected.", s);
             client = s;
         }
 
@@ -344,12 +344,29 @@ public class FTPFS extends VFSStub implements Runnable {
                                 data = pasv.accept();
                             }
                             PrintWriter out = new PrintWriter(data.getOutputStream(), true);
+
                             SimpleVFile v = get(cwd);
-                            ArrayList<SimpleVFile> files = new ArrayList(v.list());
+                            final List<SimpleVFile> files = new LinkedList<SimpleVFile>(v.list());
                             Collections.sort(files, nameComparator);
-                            for(SimpleVFile f : files) {
-                                out(out, toFTPString(f));
+
+                            ExecutorService executor = Executors.newCachedThreadPool();
+                            final CountDownLatch cdl = new CountDownLatch(files.size());
+                            final String[] lines = new String[files.size()];
+                            for(int i = 0; i < lines.length; i++) {
+                                final int j = i;
+                                executor.submit(new Runnable() {
+                                    public void run() {
+                                        lines[j] = toFTPString(files.get(j));
+                                        cdl.countDown();
+                                    }
+                                });
                             }
+                            cdl.await();
+                            
+                            for(String line : lines) {
+                                out(out, line);
+                            }
+
                             out.close();
                             out(pw, "226 Directory send OK.");
                         } else if(cmd.toUpperCase().startsWith("QUIT")) {
@@ -488,7 +505,7 @@ public class FTPFS extends VFSStub implements Runnable {
                     }
                 }
                 client.close();
-                LOG.log(Level.INFO, "{0} closed.", client);
+                LOG.log(Level.FINE, "{0} closed.", client);
             } catch(IOException ex) {
                 Logger.getLogger(FTPFS.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -499,7 +516,7 @@ public class FTPFS extends VFSStub implements Runnable {
                 string = string.substring(0, string.length() - 1);
             }
             String[] split = string.split("/");
-            ArrayList<String> pieces = new ArrayList<String>();
+            List<String> pieces = new LinkedList<String>();
             for(String s : split) {
                 if(s.length() == 0) {
                 } else if(s.equals("..")) {

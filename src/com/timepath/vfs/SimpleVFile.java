@@ -22,7 +22,7 @@ public abstract class SimpleVFile implements VFile<SimpleVFile>, ViewableData {
     private static final Logger LOG = Logger.getLogger(SimpleVFile.class.getName());
 
     //<editor-fold defaultstate="collapsed" desc="Listener">
-    public ArrayList<FileChangeListener> listeners = new ArrayList<FileChangeListener>();
+    public List<FileChangeListener> listeners = new LinkedList<FileChangeListener>();
 
     public void addFileChangeListener(FileChangeListener listener) {
         listeners.add(listener);
@@ -47,13 +47,13 @@ public abstract class SimpleVFile implements VFile<SimpleVFile>, ViewableData {
     }
     //</editor-fold>
 
-    public ArrayList<SimpleVFile> find(String search) {
+    public List<SimpleVFile> find(String search) {
         return find(search, this);
     }
 
-    public ArrayList<SimpleVFile> find(String search, SimpleVFile root) {
+    public List<SimpleVFile> find(String search, SimpleVFile root) {
         search = search.toLowerCase();
-        ArrayList<SimpleVFile> list = new ArrayList<SimpleVFile>();
+        List<SimpleVFile> list = new LinkedList<SimpleVFile>();
         for(SimpleVFile e : root.children()) {
             String str = e.getName().toLowerCase();
             if(str.contains(search)) {
