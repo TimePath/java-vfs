@@ -1,12 +1,15 @@
 package com.timepath.vfs.http;
 
 import com.timepath.vfs.MockFile;
-import com.timepath.vfs.VFSStub;
 import com.timepath.vfs.SimpleVFile;
+import com.timepath.vfs.VFSStub;
 import java.io.*;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -18,6 +21,15 @@ public class HTTPFS extends VFSStub implements Runnable {
 
     private static final Logger LOG = Logger.getLogger(HTTPFS.class.getName());
 
+    private ExecutorService pool = Executors.newFixedThreadPool(10, new ThreadFactory() {
+
+        public Thread newThread(Runnable r) {
+            Thread t = Executors.defaultThreadFactory().newThread(r);
+            t.setDaemon(false);
+            return t;
+        }
+    });
+    
     public static void main(String... args) throws IOException {
         HTTPFS f = new HTTPFS(8000);
         f.add(new MockFile("test.txt", "It works!"));
@@ -27,14 +39,14 @@ public class HTTPFS extends VFSStub implements Runnable {
 
     private static String in(BufferedReader in) throws IOException {
         String s = in.readLine();
-        LOG.log(Level.INFO, "<<< {0}", s);
+        LOG.log(Level.FINE, "<<< {0}", s);
         return s;
     }
 
     private static void out(PrintWriter out, String cmd) {
         out.print(cmd + "\r\n");
         out.flush();
-        LOG.log(Level.INFO, ">>> {0}", cmd);
+        LOG.log(Level.FINE, ">>> {0}", cmd);
     }
 
     private final ServerSocket servsock;
@@ -58,9 +70,8 @@ public class HTTPFS extends VFSStub implements Runnable {
 
     public void run() {
         for(;;) {
-//            LOG.info("Waiting for client...");
             try {
-                new Thread(new HTTPConnection(servsock.accept())).start();
+                pool.submit(new HTTPConnection(servsock.accept()));
             } catch(IOException ex) {
                 LOG.log(Level.SEVERE, null, ex);
             }
@@ -78,9 +89,12 @@ public class HTTPFS extends VFSStub implements Runnable {
 
         public void run() {
             try {
-                BufferedReader br = new BufferedReader(
-                        new InputStreamReader(client.getInputStream()));
-                PrintWriter pw = new PrintWriter(client.getOutputStream(), true);
+                BufferedInputStream is = new BufferedInputStream(client.getInputStream());
+                BufferedOutputStream os = new BufferedOutputStream(client.getOutputStream());
+                
+                BufferedReader br = new BufferedReader(new InputStreamReader(is));
+                PrintWriter pw = new PrintWriter(os, true);
+                
                 while(!client.isClosed()) {
                     try {
                         String cmd = in(br);
@@ -97,21 +111,21 @@ public class HTTPFS extends VFSStub implements Runnable {
                             SimpleVFile f = get(ch);
                             LOG.log(Level.INFO, "*** GETing {0}", ch);
                             if(f != null) {
-                                InputStream is = f.stream();
-                                if(is != null) {
+                                InputStream stream = f.stream();
+                                if(stream != null) {
                                     out(pw, http + " 200 OK");
                                     out(pw, "");
-                                    OutputStream os = client.getOutputStream();
                                     byte[] buf = new byte[1024 * 8];
                                     int read;
-                                    while((read = is.read(buf)) > -1) {
+                                    while((read = stream.read(buf)) > -1) {
                                         os.write(buf, 0, read);
                                         os.flush();
                                     }
-                                    is.close();
+                                    stream.close();
                                 }
                             } else {
-                                out(pw, "404 File not found.");
+                                out(pw, http + " 404 NOT FOUND");
+                                out(pw, "");
                             }
                             client.close();
                             break;
