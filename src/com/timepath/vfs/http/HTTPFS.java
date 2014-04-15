@@ -21,15 +21,6 @@ public class HTTPFS extends VFSStub implements Runnable {
 
     private static final Logger LOG = Logger.getLogger(HTTPFS.class.getName());
 
-    private ExecutorService pool = Executors.newFixedThreadPool(10, new ThreadFactory() {
-
-        public Thread newThread(Runnable r) {
-            Thread t = Executors.defaultThreadFactory().newThread(r);
-            t.setDaemon(false);
-            return t;
-        }
-    });
-    
     public static void main(String... args) throws IOException {
         HTTPFS f = new HTTPFS(8000);
         f.add(new MockFile("test.txt", "It works!"));
@@ -49,6 +40,15 @@ public class HTTPFS extends VFSStub implements Runnable {
         LOG.log(Level.FINE, ">>> {0}", cmd);
     }
 
+    private final ExecutorService pool = Executors.newFixedThreadPool(10, new ThreadFactory() {
+
+        public Thread newThread(Runnable r) {
+            Thread t = Executors.defaultThreadFactory().newThread(r);
+            t.setDaemon(false);
+            return t;
+        }
+    });
+
     private final ServerSocket servsock;
 
     public HTTPFS() throws IOException {
@@ -56,9 +56,16 @@ public class HTTPFS extends VFSStub implements Runnable {
     }
 
     public HTTPFS(int port) throws IOException {
-        servsock = new ServerSocket(port);//, 0, InetAddress.getByName(null)); // cannot use java7 InetAddress.getLoopbackAddress(). On windows, this prevents firewall warnings. It's also good for security in general
+        this(port, null);
+    }
+
+    public HTTPFS(int port, InetAddress addr) throws IOException {
+        if(addr == null) { // On windows, this prevents firewall warnings. It's also good for security in general
+            addr = InetAddress.getByName(null); // cannot use java7 InetAddress.getLoopbackAddress().
+        }
+        servsock = new ServerSocket(port, 0, addr);
         LOG.log(Level.INFO, "Listening on {0}:{1}", new Object[] {
-            InetAddress.getLocalHost().getHostAddress(), servsock.getLocalPort()});
+            servsock.getInetAddress().getHostAddress(), servsock.getLocalPort()});
 
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
@@ -83,7 +90,7 @@ public class HTTPFS extends VFSStub implements Runnable {
         private final Socket client;
 
         private HTTPConnection(Socket s) {
-            LOG.log(Level.INFO, "{0} connected.", s);
+            LOG.log(Level.FINE, "{0} connected.", s);
             client = s;
         }
 
@@ -91,10 +98,10 @@ public class HTTPFS extends VFSStub implements Runnable {
             try {
                 BufferedInputStream is = new BufferedInputStream(client.getInputStream());
                 BufferedOutputStream os = new BufferedOutputStream(client.getOutputStream());
-                
+
                 BufferedReader br = new BufferedReader(new InputStreamReader(is));
                 PrintWriter pw = new PrintWriter(os, true);
-                
+
                 while(!client.isClosed()) {
                     try {
                         String cmd = in(br);
@@ -109,7 +116,7 @@ public class HTTPFS extends VFSStub implements Runnable {
                                 ch = "/index.html";
                             }
                             SimpleVFile f = get(ch);
-                            LOG.log(Level.INFO, "*** GETing {0}", ch);
+                            LOG.log(Level.FINE, "*** GETing {0}", ch);
                             if(f != null) {
                                 InputStream stream = f.stream();
                                 if(stream != null) {
@@ -127,15 +134,14 @@ public class HTTPFS extends VFSStub implements Runnable {
                                 out(pw, http + " 404 NOT FOUND");
                                 out(pw, "");
                             }
-                            client.close();
-                            break;
                         }
                     } catch(Exception ex) {
                         LOG.log(Level.SEVERE, null, ex);
-                        break;
                     }
+                    client.close();
+                    break;
                 }
-                LOG.log(Level.INFO, "{0} closed.", client);
+                LOG.log(Level.FINE, "{0} closed.", client);
             } catch(IOException ex) {
                 LOG.log(Level.SEVERE, null, ex);
             }
