@@ -1,15 +1,12 @@
 package com.timepath.vfs.ftp;
 
-import com.timepath.vfs.MockFile;
-import com.timepath.vfs.VFSStub;
-import com.timepath.vfs.SimpleVFile;
+import com.timepath.vfs.*;
 import java.io.*;
-import java.net.InetAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
+import java.net.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -39,8 +36,17 @@ public class FTPFS extends VFSStub implements Runnable {
 
     private static final Logger LOG = Logger.getLogger(FTPFS.class.getName());
 
-    public static FTPFS create() throws IOException {
-        return create(2121);
+    private ExecutorService pool = Executors.newFixedThreadPool(10, new ThreadFactory() {
+
+        public Thread newThread(Runnable r) {
+            Thread t = Executors.defaultThreadFactory().newThread(r);
+            t.setDaemon(false);
+            return t;
+        }
+    });
+
+    public FTPFS() throws IOException {
+        this(2121);
     }
 
     /**
@@ -48,11 +54,10 @@ public class FTPFS extends VFSStub implements Runnable {
      * <p>
      * @param port
      *             <p>
-     * @return
      * @throws java.io.IOException
      */
-    public static FTPFS create(int port) throws IOException {
-        return create(port, null); // cannot use java7 InetAddress.getLoopbackAddress(). On windows, this prevents firewall warnings. It's also good for security in general
+    public FTPFS(int port) throws IOException {
+        this(port, null); // cannot use java7 InetAddress.getLoopbackAddress(). On windows, this prevents firewall warnings. It's also good for security in general
     }
 
     /**
@@ -61,15 +66,12 @@ public class FTPFS extends VFSStub implements Runnable {
      * @param port
      * @param addr If null, listen on all available interfaces
      * <p>
-     * @return
      * @throws java.io.IOException
      */
-    public static FTPFS create(int port, InetAddress addr) throws IOException {
-        FTPFS f = new FTPFS();
-        f.port = port;
-        f.address = addr;
-        f.bind();
-        return f;
+    public FTPFS(int port, InetAddress addr) throws IOException {
+        this.port = port;
+        this.address = addr;
+        this.bind();
     }
 
     private static String toFTPString(SimpleVFile file) {
@@ -80,22 +82,23 @@ public class FTPFS extends VFSStub implements Runnable {
             f[0][1] = 'w';
             f[0][2] = 'x';
         }
+        long fileSize = file.length();
 
         String perms = "" + spec
-                       + f[0][0] + f[0][1] + f[0][2]
-                       + f[1][0] + f[1][1] + f[1][2]
-                       + f[2][0] + f[2][1] + f[2][2];
+                           + f[0][0] + f[0][1] + f[0][2]
+                           + f[1][0] + f[1][1] + f[1][2]
+                           + f[2][0] + f[2][1] + f[2][2];
 
         StringBuilder sb = new StringBuilder();
         sb.append(perms);
         sb.append(" ");
-        sb.append(String.format("%4s", file.length())); // >= 4 left
+        sb.append(String.format("%4s", fileSize)); // >= 4 left
         sb.append(" ");
         sb.append(String.format("%-8s", file.owner())); // >= 8 right
         sb.append(" ");
         sb.append(String.format("%-8s", file.group())); // >= 8 right
         sb.append(" ");
-        sb.append(String.format("%8s", file.length())); // >= 8 left
+        sb.append(String.format("%8s", fileSize)); // >= 8 left
         sb.append(" ");
         Calendar cal = Calendar.getInstance();
 
@@ -118,7 +121,7 @@ public class FTPFS extends VFSStub implements Runnable {
     }
 
     public static void main(String[] args) throws IOException {
-        FTPFS f = FTPFS.create(2121, null);
+        FTPFS f = new FTPFS(2121, null);
         f.add(new MockFile("test.txt", "It works!"));
         f.add(new MockFile("world.txt", "Hello world"));
         f.run();
@@ -126,14 +129,14 @@ public class FTPFS extends VFSStub implements Runnable {
 
     private static String in(BufferedReader in) throws IOException {
         String s = in.readLine();
-        LOG.log(Level.INFO, "<<< {0}", s);
+        LOG.log(Level.FINE, "<<< {0}", s);
         return s;
     }
 
     private static void out(PrintWriter out, String cmd) {
         out.print(cmd + "\r\n");
         out.flush();
-        LOG.log(Level.INFO, ">>> {0}", cmd);
+        LOG.log(Level.FINE, ">>> {0}", cmd);
     }
 
     /**
@@ -142,8 +145,8 @@ public class FTPFS extends VFSStub implements Runnable {
      * @param f
      */
     protected void fileModified(SimpleVFile f) {
-        for(int i = 0; i < listeners.size(); i++) {
-            listeners.get(i).fileModified(f);
+        for(FileChangeListener listener : listeners) {
+            listener.fileModified(f);
         }
     }
 
@@ -169,19 +172,16 @@ public class FTPFS extends VFSStub implements Runnable {
 
             @Override
             public void run() {
-                LOG.info("FTP server shutting down...");
+                LOG.log(Level.INFO, "FTP server shutting down...");
             }
         });
         for(;;) {
-//            LOG.info("Waiting for client...");
+//            LOG.log(Level.INFO, "Waiting for client...");
             try {
-                new Thread(new FTPConnection(servsock.accept())).start();
+                pool.submit(new FTPConnection(servsock.accept()));
 
             } catch(IOException ex) {
-                Logger.getLogger(FTPFS.class
-                    .getName()).log(Level.SEVERE, null, ex);
-
-                continue;
+                LOG.log(Level.SEVERE, null, ex);
             }
         }
     }
@@ -218,17 +218,17 @@ public class FTPFS extends VFSStub implements Runnable {
                     new InputStreamReader(client.getInputStream()));
                 PrintWriter pw = new PrintWriter(client.getOutputStream(), true);
                 out(pw, "220 Welcome");
+                long skip = 0;
                 while(!client.isClosed()) {
                     try {
                         String cmd = in(br);
                         if(cmd == null) {
-                            client.close();
                             break;
                         } else if(cmd.toUpperCase().startsWith("GET")) {
                             out(pw, "This is an FTP server.");
-                            client.close();
                             break;
                         }
+
                         if(cmd.toUpperCase().startsWith("USER")) {
                             out(pw, "331 Please specify the password.");
                         } else if(cmd.toUpperCase().startsWith("PASS")) {
@@ -253,7 +253,7 @@ public class FTPFS extends VFSStub implements Runnable {
                             String[] args = cmd.substring(5).split(",");
                             String sep = ".";
                             String dataAddress = args[0] + sep + args[1] + sep + args[2] + sep
-                                                 + args[3];
+                                                     + args[3];
                             int dataPort = (Integer.parseInt(args[4]) * 256) + Integer.parseInt(
                                 args[5]);
                             data = new Socket(InetAddress.getByName(dataAddress), dataPort);
@@ -291,7 +291,13 @@ public class FTPFS extends VFSStub implements Runnable {
                             out(pw, "229 Entering Extended Passive Mode (|||" + p + "|).");
                         } else if(cmd.toUpperCase().startsWith("SIZE")) {
                             String req = cmd.substring(5);
-                            SimpleVFile f = get(req);
+                            String ch;
+                            if(req.startsWith("/")) {
+                                ch = req;
+                            } else {
+                                ch = canonicalize(cwd + "/" + req);
+                            }
+                            SimpleVFile f = get(ch);
                             if(f == null || f.isDirectory()) {
                                 out(pw, "550 Could not get file size.");
                             } else {
@@ -306,16 +312,18 @@ public class FTPFS extends VFSStub implements Runnable {
                             } else {
                                 out(pw, "504 Bad MODE command.");
                             }
-                        } else if(cmd.toUpperCase().startsWith("CWD") || cmd.toUpperCase()
-                            .startsWith(
-                                "CDUP")) {
+                        } else if(cmd.toUpperCase().startsWith("CWD") || cmd.toUpperCase().startsWith("CDUP")) {
+                            LOG.log(Level.FINE, "Changing from: {0}", cwd);
                             String ch;
                             if(cmd.toUpperCase().startsWith("CDUP")) {
                                 ch = canonicalize(cwd + "/..");
                             } else {
                                 String dir = canonicalize(cmd.substring(4));
+                                if(dir.length() > 1) {
+                                    dir = dir.substring(1);
+                                }
                                 if(!dir.endsWith("/")) {
-                                    dir = dir + "/";
+                                    dir += "/";
                                 }
                                 if(dir.startsWith("/")) {
                                     ch = dir;
@@ -346,7 +354,7 @@ public class FTPFS extends VFSStub implements Runnable {
                             out(pw, "226 Directory send OK.");
                         } else if(cmd.toUpperCase().startsWith("QUIT")) {
                             out(pw, "221 Goodbye");
-                            client.close();
+                            break;
                         } else if(cmd.toUpperCase().startsWith("MDTM")) {
                             String req = cmd.substring(5);
                             String ch;
@@ -359,7 +367,13 @@ public class FTPFS extends VFSStub implements Runnable {
                             Calendar cal = Calendar.getInstance();
                             cal.setTimeInMillis(f.lastModified());
                             out(pw, "200 " + mdtm.format(cal.getTime()));
+                        } else if(cmd.toUpperCase().startsWith("REST")) {
+                            skip = Long.parseLong(cmd.substring(5));
+                            out(pw, "350 Skipped " + skip + " bytes");
                         } else if(cmd.toUpperCase().startsWith("RETR")) {
+                            long toSkip = skip;
+                            skip = 0;
+
                             String req = cmd.substring(5);
                             String ch;
                             if(req.startsWith("/")) {
@@ -373,16 +387,26 @@ public class FTPFS extends VFSStub implements Runnable {
                                 if(pasv != null) {
                                     data = pasv.accept();
                                 }
-                                InputStream is = f.stream();
-                                OutputStream os = data.getOutputStream();
-                                byte[] buf = new byte[1024 * 8];
-                                int read;
-                                while((read = is.read(buf)) > -1) {
-                                    os.write(buf, 0, read);
-                                    os.flush();
+                                try {
+                                    InputStream is = f.stream();
+                                    is.skip(toSkip);
+                                    OutputStream os = data.getOutputStream();
+                                    // anonymous clients seem to request this much and then quit
+                                    byte[] buf = new byte[131072];
+                                    int read;
+                                    while((read = is.read(buf)) > -1) {
+                                        os.write(buf, 0, read);
+                                        os.flush();
+                                    }
+                                    is.close();
+                                    os.close();
+                                } catch(SocketException se) {
+                                    if(!("Connection reset".equals(se.getMessage())
+                                         || "Broken pipe".equals(se.getMessage()))) {
+                                        LOG.log(Level.SEVERE, "Error serving " + ch, se);
+                                    }
+                                    break;
                                 }
-                                is.close();
-                                data.close();
                                 out(pw, "226 File sent");
                             } else {
                                 out(pw, "550 Failed to open file.");
@@ -422,7 +446,6 @@ public class FTPFS extends VFSStub implements Runnable {
                         } else if(cmd.toUpperCase().startsWith("STOR")) {
                             //<editor-fold defaultstate="collapsed" desc="Upload file">
                             String file = cmd.substring(5);
-                            System.out.println(file);
                             String text = "";
                             out(pw, "150 Entering Transfer Mode");
                             if(pasv != null) {
@@ -464,6 +487,7 @@ public class FTPFS extends VFSStub implements Runnable {
                         break;
                     }
                 }
+                client.close();
                 LOG.log(Level.INFO, "{0} closed.", client);
             } catch(IOException ex) {
                 Logger.getLogger(FTPFS.class.getName()).log(Level.SEVERE, null, ex);
@@ -491,7 +515,7 @@ public class FTPFS extends VFSStub implements Runnable {
                 sb.append("/").append(s);
             }
             String ret = sb.toString();
-            LOG.info(ret);
+            LOG.log(Level.FINE, ret);
             return ret;
         }
 
