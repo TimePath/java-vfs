@@ -210,7 +210,16 @@ public abstract class SimpleVFile implements VFile<SimpleVFile>, ViewableData {
         return DEFAULT_GROUP;
     }
 
+    private long length = -1;
+
     public long length() {
+        if(length == -1) {
+            length = lengthEstimate();
+        }
+        return length;
+    }
+
+    private long lengthEstimate() {
         try {
             return this.stream().available();
         } catch(IOException ex) {
@@ -218,7 +227,7 @@ public abstract class SimpleVFile implements VFile<SimpleVFile>, ViewableData {
         } catch(NullPointerException ex) {
 
         }
-        return 0;
+        return -1;
     }
 
     protected long lastModified = System.currentTimeMillis();
