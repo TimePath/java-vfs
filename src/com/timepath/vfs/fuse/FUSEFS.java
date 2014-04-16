@@ -66,7 +66,9 @@ public class FUSEFS extends VFSStub implements Runnable {
                     InputStream stream = f.stream();
                     byte[] buf;
                     try {
-                        buf = new byte[stream.available()];
+                        stream.skip(offset);
+                        final int s = (int) Math.max(Math.min(size, stream.available()), 0);
+                        buf = new byte[s];
                         stream.read(buf);
                         buffer.put(buf);
                         return buf.length;
