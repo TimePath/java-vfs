@@ -1,6 +1,6 @@
 package com.timepath.vfs.cifs;
 
-import com.timepath.vfs.SimpleVFile.FileChangeListener;
+import com.timepath.vfs.FileChangeListener;
 import java.io.*;
 import java.net.*;
 import java.nio.ByteBuffer;

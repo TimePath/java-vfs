@@ -1,13 +1,17 @@
 package com.timepath.vfs;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Collection;
 
 /**
  *
  * @author TimePath
+ * @param <V> Specific type of VFile
  */
-public interface VFile<V> {
+public interface VFile<V extends VFile<?>> {
+    
+    public static final String SEPARATOR = "/";
 
     public boolean canExecute();
 
@@ -26,6 +30,8 @@ public interface VFile<V> {
     public V getParent();
     
     public Collection<? extends V> list();
+    
+    public V get(String path);
 
     public String getPath();
 
@@ -56,5 +62,7 @@ public interface VFile<V> {
     public boolean setWritable(boolean writable);
 
     public boolean setWritable(boolean writable, boolean ownerOnly);
+    
+    public InputStream stream();
 
 }

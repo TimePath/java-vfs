@@ -11,6 +11,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
+import static com.timepath.vfs.VFile.SEPARATOR;
+
 /**
  * With reference to:
  * http://cr.yp.to/ftp.html
@@ -139,17 +141,6 @@ public class FTPFS extends VFSStub implements Runnable {
         LOG.log(Level.FINE, ">>> {0}", cmd);
     }
 
-    /**
-     * Invoked when a file is modified
-     * <p>
-     * @param f
-     */
-    protected void fileModified(SimpleVFile f) {
-        for(FileChangeListener listener : listeners) {
-            listener.fileModified(f);
-        }
-    }
-
     private InetAddress address;
 
     private int port;
@@ -204,7 +195,7 @@ public class FTPFS extends VFSStub implements Runnable {
 
         private ServerSocket pasv;
 
-        private String cwd = "/";
+        private String cwd = SEPARATOR;
 
         private FTPConnection(Socket s) {
             LOG.log(Level.FINE, "{0} connected.", s);
@@ -292,10 +283,10 @@ public class FTPFS extends VFSStub implements Runnable {
                         } else if(cmd.toUpperCase().startsWith("SIZE")) {
                             String req = cmd.substring(5);
                             String ch;
-                            if(req.startsWith("/")) {
+                            if(req.startsWith(SEPARATOR)) {
                                 ch = req;
                             } else {
-                                ch = canonicalize(cwd + "/" + req);
+                                ch = canonicalize(cwd + SEPARATOR + req);
                             }
                             SimpleVFile f = get(ch);
                             if(f == null || f.isDirectory()) {
@@ -322,13 +313,13 @@ public class FTPFS extends VFSStub implements Runnable {
                                 if(dir.length() > 1) {
                                     dir = dir.substring(1);
                                 }
-                                if(!dir.endsWith("/")) {
-                                    dir += "/";
+                                if(!dir.endsWith(SEPARATOR)) {
+                                    dir += SEPARATOR;
                                 }
-                                if(dir.startsWith("/")) {
+                                if(dir.startsWith(SEPARATOR)) {
                                     ch = dir;
                                 } else {
-                                    ch = canonicalize(cwd + "/" + dir);
+                                    ch = canonicalize(cwd + SEPARATOR + dir);
                                 }
                             }
                             SimpleVFile f = get(ch);
@@ -362,7 +353,7 @@ public class FTPFS extends VFSStub implements Runnable {
                                 });
                             }
                             cdl.await();
-                            
+
                             for(String line : lines) {
                                 out(out, line);
                             }
@@ -375,10 +366,10 @@ public class FTPFS extends VFSStub implements Runnable {
                         } else if(cmd.toUpperCase().startsWith("MDTM")) {
                             String req = cmd.substring(5);
                             String ch;
-                            if(req.startsWith("/")) {
+                            if(req.startsWith(SEPARATOR)) {
                                 ch = req;
                             } else {
-                                ch = canonicalize(cwd + "/" + req);
+                                ch = canonicalize(cwd + SEPARATOR + req);
                             }
                             SimpleVFile f = get(ch);
                             Calendar cal = Calendar.getInstance();
@@ -393,10 +384,10 @@ public class FTPFS extends VFSStub implements Runnable {
 
                             String req = cmd.substring(5);
                             String ch;
-                            if(req.startsWith("/")) {
+                            if(req.startsWith(SEPARATOR)) {
                                 ch = req;
                             } else {
-                                ch = canonicalize(cwd + "/" + req);
+                                ch = canonicalize(cwd + SEPARATOR + req);
                             }
                             SimpleVFile f = get(ch);
                             if(f != null && !f.isDirectory()) {
@@ -483,7 +474,7 @@ public class FTPFS extends VFSStub implements Runnable {
                             data.close();
                             SimpleVFile f = new MockFile(file, text);
                             files.put(file, f);
-                            fileModified(f);
+                            FTPFS.this.fileModified(f);
                             LOG.log(Level.INFO, "***\r\n{0}", text);
                             out(pw, "226 File uploaded successfully");
                             //</editor-fold>
@@ -512,10 +503,10 @@ public class FTPFS extends VFSStub implements Runnable {
         }
 
         private String canonicalize(String string) {
-            if(string.endsWith("/")) {
+            if(string.endsWith(SEPARATOR)) {
                 string = string.substring(0, string.length() - 1);
             }
-            String[] split = string.split("/");
+            String[] split = string.split(SEPARATOR);
             List<String> pieces = new LinkedList<String>();
             for(String s : split) {
                 if(s.length() == 0) {
@@ -529,7 +520,7 @@ public class FTPFS extends VFSStub implements Runnable {
             }
             StringBuilder sb = new StringBuilder();
             for(String s : pieces) {
-                sb.append("/").append(s);
+                sb.append(SEPARATOR).append(s);
             }
             String ret = sb.toString();
             LOG.log(Level.FINE, ret);

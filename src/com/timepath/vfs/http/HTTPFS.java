@@ -112,7 +112,7 @@ public class HTTPFS extends VFSStub implements Runnable {
                             String[] args = cmd.substring(4).split(" ");
                             String ch = args[0];
                             String http = args[1];
-                            if(ch.equals("/")) {
+                            if(ch.equals(SEPARATOR)) {
                                 ch = "/index.html";
                             }
                             SimpleVFile f = get(ch);

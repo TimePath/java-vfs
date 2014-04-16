@@ -2,43 +2,21 @@ package com.timepath.vfs;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.util.logging.Logger;
 
-/**
- *
- * @author TimePath
- */
 public class MockFile extends SimpleVFile {
 
-    private String name, cont;
+    private static final Logger LOG = Logger.getLogger(MockFile.class.getName());
+
+    private String cont, name;
+
+    public MockFile(String name) {
+        this(name, null);
+    }
 
     public MockFile(String name, String cont) {
         this.name = name;
         this.cont = cont;
-    }
-
-    @Override
-    public boolean isDirectory() {
-        return cont == null;
-    }
-
-    @Override
-    public String owner() {
-        return "ftp";
-    }
-
-    @Override
-    public String group() {
-        return "ftp";
-    }
-
-    @Override
-    public long length() {
-        return cont != null ? cont.getBytes().length : this.files.size();
-    }
-
-    @Override
-    public long lastModified() {
-        return System.currentTimeMillis();
     }
 
     @Override
@@ -47,13 +25,13 @@ public class MockFile extends SimpleVFile {
     }
 
     @Override
-    public InputStream stream() {
-        return new ByteArrayInputStream(cont.getBytes());
+    public boolean isDirectory() {
+        return cont == null;
     }
 
     @Override
-    public String getPath() {
-        return "";
+    public InputStream stream() {
+        return new ByteArrayInputStream(cont.getBytes());
     }
 
 }
