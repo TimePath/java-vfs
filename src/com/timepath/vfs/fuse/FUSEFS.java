@@ -48,13 +48,7 @@ public class FUSEFS extends VFSStub implements Runnable {
                     stat.setMode(NodeType.DIRECTORY);
                 } else {
                     stat.setMode(NodeType.FILE);
-
-                    try {
-                        stat.size(f.stream().available());
-                    } catch(IOException ex) {
-                        LOG.log(Level.SEVERE, null, ex);
-                        stat.size(0);
-                    }
+                    stat.size(Math.max(f.length(), 0));
                 }
                 return 0;
             }
