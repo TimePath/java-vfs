@@ -7,13 +7,16 @@ public class VFSStub extends SimpleVFile {
 
     private static final Logger LOG = Logger.getLogger(VFSStub.class.getName());
 
-    private String name;
+    public String name;
 
     public VFSStub() {
-        this("");
+        this(null);
     }
 
     public VFSStub(String name) {
+        if(name == null) {
+            name = this.toString();
+        }
         this.name = name;
     }
 
