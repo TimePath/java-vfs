@@ -14,7 +14,7 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>commons</artifactId>
-            <version>[0,)</version>
+            <version>1.0-SNAPSHOT</version>
         </dependency>
         <!-- install this first. TODO: optional/automatic -->
         <dependency>
