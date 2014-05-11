@@ -1,2 +1,3 @@
 /target/
-/lib/fuse-jna/target/
+/.idea/
+/*.iml
