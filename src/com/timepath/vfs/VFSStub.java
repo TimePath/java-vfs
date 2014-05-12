@@ -6,23 +6,26 @@ import java.util.logging.Logger;
 public class VFSStub extends SimpleVFile {
 
     private static final Logger LOG = Logger.getLogger(VFSStub.class.getName());
-
     public String name;
 
-    public VFSStub() {
+    protected VFSStub() {
         this(null);
     }
 
-    public VFSStub(String name) {
+    private VFSStub(String name) {
         if(name == null) {
-            name = this.toString();
-        }
-        this.name = name;
+            name = toString();
+        } this.name = name;
     }
 
     @Override
     public String getName() {
         return name;
+    }
+
+    @Override
+    public InputStream stream() {
+        return null;
     }
 
     @Override
@@ -49,10 +52,4 @@ public class VFSStub extends SimpleVFile {
     public String owner() {
         return System.getProperty("user.name", "nobody");
     }
-
-    @Override
-    public InputStream stream() {
-        return null;
-    }
-
 }

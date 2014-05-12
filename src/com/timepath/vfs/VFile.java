@@ -1,68 +1,67 @@
 package com.timepath.vfs;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
 
 /**
+ * @param <V>
+ *         Specific type of VFile
  *
  * @author TimePath
- * @param <V> Specific type of VFile
  */
 public interface VFile<V extends VFile<?>> {
-    
-    public static final String SEPARATOR = "/";
 
-    public boolean canExecute();
+    String SEPARATOR = "/";
 
-    public boolean canRead();
+    boolean canExecute();
 
-    public boolean canWrite();
+    boolean canRead();
 
-    public boolean createNewFile() throws IOException;
+    boolean canWrite();
 
-    public boolean delete();
+    boolean createNewFile();
 
-    public boolean exists();
+    boolean delete();
 
-    public String getName();
+    boolean exists();
 
-    public V getParent();
-    
-    public Collection<? extends V> list();
-    
-    public V get(String path);
+    String getName();
 
-    public String getPath();
+    V getParent();
 
-    public long getTotalSpace();
+    Collection<? extends V> list();
 
-    public long getUsableSpace();
+    V get(String path);
 
-    public boolean isDirectory();
+    String getPath();
 
-    public boolean isFile();
+    long getTotalSpace();
 
-    public long lastModified();
+    long getUsableSpace();
 
-    public long length();
+    boolean isDirectory();
 
-    public boolean renameTo(V dest);
+    boolean isFile();
 
-    public boolean setExecutable(boolean executable);
+    long lastModified();
 
-    public boolean setExecutable(boolean executable, boolean ownerOnly);
+    long length();
 
-    public boolean setLastModified(long time);
+    boolean renameTo(V dest);
 
-    public boolean setReadable(boolean readable);
+    boolean setExecutable(boolean executable);
 
-    public boolean setReadable(boolean readable, boolean ownerOnly);
+    boolean setExecutable(boolean executable, boolean ownerOnly);
 
-    public boolean setWritable(boolean writable);
+    boolean setLastModified(long time);
 
-    public boolean setWritable(boolean writable, boolean ownerOnly);
-    
-    public InputStream stream();
+    boolean setReadable(boolean readable);
 
+    boolean setReadable(boolean readable, boolean ownerOnly);
+
+    boolean setWritable(boolean writable);
+
+    boolean setWritable(boolean writable, boolean ownerOnly);
+
+    InputStream stream();
 }
