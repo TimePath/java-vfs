@@ -29,49 +29,55 @@ public class CIFSWatcher {
 
     private CIFSWatcher(int port) {
         try {
-            final ServerSocket sock = new ServerSocket(port,
-                                                       0,
-                                                       InetAddress.getByName(null)); // cannot use java7 InetAddress
-            // .getLoopbackAddress(). On windows,
-            // this prevents firewall warnings. It's also good for
-            // security in general
-            port = sock.getLocalPort(); LOG.log(Level.INFO, "Listening on port {0}", port);
+            // On windows, the loopback address does not prompt the firewall
+            // Also good for security in general
+            final ServerSocket sock = new ServerSocket(port, 0, InetAddress.getLoopbackAddress());
+            port = sock.getLocalPort();
+            LOG.log(Level.INFO, "Listening on port {0}", port);
             Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
                 @Override
                 public void run() {
                     LOG.info("CIFS server shutting down...");
                 }
-            })); new Thread(new Runnable() {
+            }));
+            new Thread(new Runnable() {
                 private Socket data;
                 private ServerSocket pasv;
 
                 @Override
                 public void run() {
                     while(true) {
-                        final Socket client; try {
-                            LOG.info("Waiting for client..."); client = sock.accept(); LOG.info("Connected");
+                        final Socket client;
+                        try {
+                            LOG.info("Waiting for client...");
+                            client = sock.accept();
+                            LOG.info("Connected");
                         } catch(IOException ex) {
-                            Logger.getLogger(CIFSWatcher.class.getName()).log(Level.SEVERE, null, ex); continue;
-                        } new Thread(new Runnable() {
+                            Logger.getLogger(CIFSWatcher.class.getName()).log(Level.SEVERE, null, ex);
+                            continue;
+                        }
+                        new Thread(new Runnable() {
                             @Override
                             public void run() {
                                 try {
                                     InputStream is = client.getInputStream();
-                                    OutputStream os = client.getOutputStream(); while(!client.isClosed()) {
+                                    OutputStream os = client.getOutputStream();
+                                    while(!client.isClosed()) {
                                         try {
-                                            byte[] buf = new byte[200]; while(is.read(buf) != -1) {
+                                            byte[] buf = new byte[200];
+                                            while(is.read(buf) != -1) {
                                                 String text = new String(buf).trim();
-                                                LOG.info(Arrays.toString(text.getBytes())); LOG.info(text);
+                                                LOG.info(Arrays.toString(text.getBytes()));
+                                                LOG.info(text);
                                             }
-                                            //                                            Packet cmd = new Packet()
-                                            // .read(is);
-                                            //                                            if(cmd == null) {
-                                            //                                                break;
-                                            //                                            }
+                                            // TODO: Packet handling
                                         } catch(Exception ex) {
-                                            LOG.log(Level.SEVERE, null, ex); client.close(); break;
+                                            LOG.log(Level.SEVERE, null, ex);
+                                            client.close();
+                                            break;
                                         }
-                                    } LOG.info("Socket closed");
+                                    }
+                                    LOG.info("Socket closed");
                                 } catch(IOException ex) {
                                     Logger.getLogger(CIFSWatcher.class.getName()).log(Level.SEVERE, null, ex);
                                 }
@@ -81,22 +87,39 @@ public class CIFSWatcher {
 
                                 private int header; // \0xFF S M B
 
+                                Packet() {}
+
                                 private Packet read(InputStream is) throws IOException {
                                     ByteBuffer buf = ByteBuffer.allocate(42); // Average CIFS header size
-                                    byte[] head = new byte[24]; is.read(head); LOG.info(Arrays.toString(head));
-                                    LOG.info(new String(head)); buf.put(head); buf.flip(); header = buf.getInt();
-                                    command = buf.get(); errorClass = buf.get(); buf.get(); // == 0
-                                    errorCode = buf.getShort(); flags = buf.get(); flags2 = buf.getShort();
+                                    byte[] head = new byte[24];
+                                    is.read(head);
+                                    LOG.info(Arrays.toString(head));
+                                    LOG.info(new String(head));
+                                    buf.put(head);
+                                    buf.flip();
+                                    header = buf.getInt();
+                                    command = buf.get();
+                                    errorClass = buf.get();
+                                    buf.get(); // == 0
+                                    errorCode = buf.getShort();
+                                    flags = buf.get();
+                                    flags2 = buf.getShort();
                                     secure = buf.getLong(); // or padding
                                     tid = buf.getShort(); // Tree ID
                                     pid = buf.getShort(); // Process ID
                                     uid = buf.getShort(); // User ID
                                     mid = buf.getShort(); // Multiplex ID
-                                    int wordCount = is.read(); byte[] words = new byte[wordCount * 2]; is.read(words);
+                                    int wordCount = is.read();
+                                    byte[] words = new byte[wordCount * 2];
+                                    is.read(words);
                                     ByteBuffer wordBuffer = ByteBuffer.wrap(words);
-                                    parameterWords = new short[wordCount]; for(int i = 0; i < words.length; i++) {
+                                    parameterWords = new short[wordCount];
+                                    for(int i = 0; i < words.length; i++) {
                                         parameterWords[i] = wordBuffer.getShort();
-                                    } int payloadLength = is.read(); buffer = new byte[payloadLength]; is.read(buffer);
+                                    }
+                                    int payloadLength = is.read();
+                                    buffer = new byte[payloadLength];
+                                    is.read(buffer);
                                     return this;
                                 }
 
@@ -181,15 +204,18 @@ public class CIFSWatcher {
     }
 
     public static void main(String... args) {
-        int port = 8000; if(args.length >= 1) {
+        int port = 8000;
+        if(args.length >= 1) {
             port = Integer.parseInt(args[0]);
-        } getInstance(port);
+        }
+        getInstance(port);
     }
 
     private static CIFSWatcher getInstance(int port) {
         if(instance == null) {
             instance = new CIFSWatcher(port);
-        } return instance;
+        }
+        return instance;
     }
 
     public void addFileChangeListener(FileChangeListener listener) {

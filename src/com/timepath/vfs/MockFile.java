@@ -14,7 +14,8 @@ public class MockFile extends SimpleVFile {
     }
 
     public MockFile(String name, String cont) {
-        this.name = name; this.cont = cont;
+        this.name = name;
+        this.cont = cont;
     }
 
     @Override
