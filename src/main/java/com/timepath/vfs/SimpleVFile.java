@@ -5,6 +5,7 @@ import com.timepath.io.utils.ViewableData;
 import javax.swing.*;
 import java.io.*;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -16,7 +17,7 @@ public abstract class SimpleVFile implements VFile<SimpleVFile>, ViewableData, F
     private static final Logger                         LOG           = Logger.getLogger(SimpleVFile.class.getName());
     private static final String                         DEFAULT_GROUP = System.getProperty("user.name", "nobody");
     private static final String                         DEFAULT_OWNER = System.getProperty("user.name", "nobody");
-    protected final      Map<String, SimpleVFile>       files         = new HashMap<>(0);
+    protected final      Map<String, SimpleVFile>       files         = Collections.synchronizedMap(new HashMap<String, SimpleVFile>(0));
     private final        Collection<FileChangeListener> listeners     = new LinkedList<>();
     private              long                           length        = -1;
     private              long                           lastModified  = System.currentTimeMillis();
@@ -31,9 +32,10 @@ public abstract class SimpleVFile implements VFile<SimpleVFile>, ViewableData, F
 
     SimpleVFile add(SimpleVFile f, boolean move) {
         if(( f != null ) && ( f != this )) {
-            if(!files.containsValue(f)) {
-                files.put(f.getName(), f);
-                f.setParent(this, move);
+            synchronized(files) {
+                if(!files.containsValue(f)) {
+                    files.put(f.getName(), f);
+                }
             }
         }
         return this;
@@ -222,7 +224,7 @@ public abstract class SimpleVFile implements VFile<SimpleVFile>, ViewableData, F
         return -1;
     }
 
-    public Iterable<SimpleVFile> children() {
+    public Collection<SimpleVFile> children() {
         return files.values();
     }
 
@@ -326,16 +328,15 @@ public abstract class SimpleVFile implements VFile<SimpleVFile>, ViewableData, F
         if(( f == null ) || ( f == this )) {
             return;
         }
-        for(Map.Entry<String, SimpleVFile> e : files.entrySet()) {
-            if(e.getValue() == f) {
-                files.remove(e.getKey());
-                f.setParent(null);
+        Set<Entry<String, SimpleVFile>> entries = files.entrySet();
+        synchronized(files) {
+            for(Map.Entry<String, SimpleVFile> e : entries) {
+                if(e.getValue() == f) {
+                    files.remove(e.getKey());
+                    f.setParent(null);
+                }
             }
         }
-    }
-
-    public void remove(String name) {
-        files.remove(name);
     }
 
     public void removeAll(Iterable<? extends SimpleVFile> c) {
@@ -357,5 +358,10 @@ public abstract class SimpleVFile implements VFile<SimpleVFile>, ViewableData, F
             }
         }
         parent = newParent;
+    }
+
+    @Override
+    public String toString() {
+        return getName();
     }
 }
