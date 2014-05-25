@@ -5,52 +5,30 @@ import com.timepath.io.utils.ViewableData;
 import javax.swing.*;
 import java.io.*;
 import java.util.*;
-import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * A simple {@link com.timepath.vfs.VFile} implementation using synchronized recursive {@link java.util.HashMap}s
+ *
  * @author TimePath
  */
-public abstract class SimpleVFile implements VFile<SimpleVFile>, ViewableData, FileChangeListener {
+public abstract class SimpleVFile implements VFile<SimpleVFile>, MutableVFile<SimpleVFile>, ViewableData, FileChangeListener {
 
-    private static final Logger                         LOG           = Logger.getLogger(SimpleVFile.class.getName());
-    private static final String                         DEFAULT_GROUP = System.getProperty("user.name", "nobody");
-    private static final String                         DEFAULT_OWNER = System.getProperty("user.name", "nobody");
-    protected final      Map<String, SimpleVFile>       files         = Collections.synchronizedMap(new HashMap<String, SimpleVFile>(0));
-    private final        Collection<FileChangeListener> listeners     = new LinkedList<>();
-    private              long                           length        = -1;
-    private              long                           lastModified  = System.currentTimeMillis();
-    private SimpleVFile parent;
+    private static final Logger LOG           = Logger.getLogger(SimpleVFile.class.getName());
+    private static final String DEFAULT_GROUP = System.getProperty("user.name", "nobody");
+    private static final String DEFAULT_OWNER = System.getProperty("user.name", "nobody");
+    protected final Map<String, SimpleVFile>       files;
+    private final   Collection<FileChangeListener> listeners;
+    private         long                           length;
+    private         long                           lastModified;
+    private         SimpleVFile                    parent;
 
-    protected SimpleVFile() {}
-
-    public SimpleVFile add(SimpleVFile f) {
-        add(f, true);
-        return this;
-    }
-
-    SimpleVFile add(SimpleVFile f, boolean move) {
-        if(( f != null ) && ( f != this )) {
-            synchronized(files) {
-                if(!files.containsValue(f)) {
-                    files.put(f.getName(), f);
-                }
-            }
-        }
-        return this;
-    }
-
-    public SimpleVFile addAll(Iterable<? extends SimpleVFile> c) {
-        addAll(c, true);
-        return this;
-    }
-
-    SimpleVFile addAll(Iterable<? extends SimpleVFile> c, boolean move) {
-        for(SimpleVFile f : c) {
-            add(f, move);
-        }
-        return this;
+    protected SimpleVFile() {
+        files = Collections.synchronizedMap(new HashMap<String, SimpleVFile>(0));
+        listeners = new LinkedList<>();
+        length = -1;
+        lastModified = System.currentTimeMillis();
     }
 
     public void addFileChangeListener(FileChangeListener listener) {
@@ -93,7 +71,16 @@ public abstract class SimpleVFile implements VFile<SimpleVFile>, ViewableData, F
     }
 
     public void setParent(SimpleVFile newParent) {
-        setParent(newParent, true);
+        if(parent == newParent) {
+            return;
+        }
+        if(parent != null) {
+            parent.remove(this);
+        }
+        if(newParent != null) {
+            newParent.add(this);
+        }
+        parent = newParent;
     }
 
     @Override
@@ -103,36 +90,40 @@ public abstract class SimpleVFile implements VFile<SimpleVFile>, ViewableData, F
 
     @Override
     public SimpleVFile get(String path) {
-        String[] split = path.split(VFile.SEPARATOR);
-        if(split.length == 1) {
-            return files.get(path);
-        }
+        if(path == null) throw new IllegalArgumentException("path cannot be null");
+        // sanitize input
         Deque<String> stack = new LinkedList<>();
-        for(String token : split) {
-            if(!token.isEmpty()) {
-                if("..".equals(token)) {
-                    if(!stack.isEmpty()) {
+        for(String token : path.split(VFile.SEPARATOR)) {
+            switch(token) {
+                case "": // ignore repeated separator
+                    break;
+                case ".": // ignore current directory
+                    break;
+                case "..":
+                    if(!stack.isEmpty()) { // ignore extra cdup's
                         stack.removeLast();
                     }
-                } else {
+                    break;
+                default:
                     stack.addLast(token);
-                }
+                    break;
             }
         }
         LOG.log(Level.FINE, "Getting {0}", stack);
-        SimpleVFile get = this;
+        SimpleVFile result = this;
         for(String token : stack) {
-            get = get.get(token);
-            if(get == null) {
+            result = result.get(token);
+            if(result == null) {
                 return null;
             }
         }
-        return get;
+        return result;
     }
 
     @Override
     public String getPath() {
-        String path = ( isDirectory() ? getName() : "" ).replaceAll(VFile.SEPARATOR, "");
+        String path = ( isDirectory() ? getName() : "" );
+        path = path.replaceAll(VFile.SEPARATOR, ""); // just in case
         if(parent != null) {
             path = parent.getPath() + VFile.SEPARATOR + path;
         }
@@ -216,7 +207,7 @@ public abstract class SimpleVFile implements VFile<SimpleVFile>, ViewableData, F
 
     private long lengthEstimate() {
         try {
-            return stream().available();
+            return openStream().available();
         } catch(IOException ex) {
             LOG.log(Level.SEVERE, null, ex);
         } catch(NullPointerException ignored) {
@@ -224,37 +215,74 @@ public abstract class SimpleVFile implements VFile<SimpleVFile>, ViewableData, F
         return -1;
     }
 
-    public Collection<SimpleVFile> children() {
-        return files.values();
+    @Override
+    public SimpleVFile add(SimpleVFile file) {
+        if(file == null) throw new IllegalArgumentException("file cannot be null");
+        if(file == this) throw new IllegalArgumentException("file cannot be this");
+        synchronized(files) {
+            addImpl(file);
+        }
+        return this;
     }
 
-    public void copy(SimpleVFile file) {
-        add(file, false);
+    @Override
+    public SimpleVFile addAll(Iterable<? extends SimpleVFile> c) {
+        synchronized(files) {
+            for(SimpleVFile f : c) {
+                addImpl(f);
+            }
+        }
+        return this;
     }
 
-    public void copyFrom(Iterable<? extends SimpleVFile> files) {
-        addAll(files, false);
+    private void addImpl(SimpleVFile file) {
+        if(!files.containsValue(file)) {
+            files.put(file.getName(), file);
+        }
     }
 
+    @Override
+    public void remove(SimpleVFile file) {
+        if(file == null) throw new IllegalArgumentException("file cannot be null");
+        if(file == this) throw new IllegalArgumentException("file cannot be this");
+        synchronized(files) {
+            removeImpl(file);
+        }
+    }
+
+    @Override
+    public void removeAll(Iterable<? extends SimpleVFile> files) {
+        synchronized(this.files) {
+            for(SimpleVFile file : files) {
+                removeImpl(file);
+            }
+        }
+    }
+
+    /**
+     * Convenience method
+     *
+     * @param dir
+     *         the directory to extract to
+     *
+     * @throws IOException
+     */
     public void extract(File dir) throws IOException {
         File out = new File(dir, getName());
         if(isDirectory()) {
             out.mkdir();
-            for(SimpleVFile f : children()) {
+            for(SimpleVFile f : list()) {
                 f.extract(out);
             }
         } else {
             out.createNewFile();
-            InputStream is = stream();
-            FileOutputStream fos = new FileOutputStream(out);
-            BufferedOutputStream os = new BufferedOutputStream(fos);
-            byte[] buf = new byte[1024 * 8]; // 8K read buffer
-            int read;
-            while(( read = is.read(buf) ) > -1) {
-                os.write(buf, 0, read);
+            InputStream is = new BufferedInputStream(openStream());
+            try(BufferedOutputStream os = new BufferedOutputStream(new FileOutputStream(out))) {
+                byte[] buf = new byte[1024 * 8]; // 8K read buffer
+                for(int read; ( read = is.read(buf) ) > -1; ) {
+                    os.write(buf, 0, read);
+                }
             }
-            os.flush();
-            os.close();
         }
     }
 
@@ -279,14 +307,21 @@ public abstract class SimpleVFile implements VFile<SimpleVFile>, ViewableData, F
         }
     }
 
+    /**
+     * Convenience method to find files recursively by name
+     *
+     * @param search
+     *
+     * @return
+     */
     public List<SimpleVFile> find(String search) {
         return find(search, this);
     }
 
-    public List<SimpleVFile> find(String search, SimpleVFile root) {
+    private List<SimpleVFile> find(String search, SimpleVFile root) {
         search = search.toLowerCase();
         List<SimpleVFile> list = new LinkedList<>();
-        for(SimpleVFile e : root.children()) {
+        for(SimpleVFile e : root.list()) {
             String str = e.getName().toLowerCase();
             if(str.contains(search)) {
                 list.add(e);
@@ -301,16 +336,14 @@ public abstract class SimpleVFile implements VFile<SimpleVFile>, ViewableData, F
     @Override
     public Icon getIcon() {
         if(isDirectory()) {
-            if(parent == null) {
-                UIManager.getIcon("FileView.hardDriveIcon");
-            }
             Icon i = null;
+            if(parent == null) {
+                i = UIManager.getIcon("FileView.hardDriveIcon");
+            }
             if(i == null) {
                 i = UIManager.getIcon("FileView.directoryIcon");
             }
             return i;
-            //        } else if(!isComplete()) {
-            //            return UIManager.getIcon("html.missingImage");
         } else {
             return UIManager.getIcon("FileView.fileIcon");
         }
@@ -324,40 +357,11 @@ public abstract class SimpleVFile implements VFile<SimpleVFile>, ViewableData, F
         return DEFAULT_OWNER;
     }
 
-    public void remove(SimpleVFile f) {
-        if(( f == null ) || ( f == this )) {
-            return;
+    private void removeImpl(SimpleVFile file) {
+        SimpleVFile removed = files.remove(file);
+        if(removed != null) {
+            removed.setParent(null);
         }
-        Set<Entry<String, SimpleVFile>> entries = files.entrySet();
-        synchronized(files) {
-            for(Map.Entry<String, SimpleVFile> e : entries) {
-                if(e.getValue() == f) {
-                    files.remove(e.getKey());
-                    f.setParent(null);
-                }
-            }
-        }
-    }
-
-    public void removeAll(Iterable<? extends SimpleVFile> c) {
-        for(SimpleVFile f : c) {
-            remove(f);
-        }
-    }
-
-    void setParent(SimpleVFile newParent, boolean move) {
-        if(parent == newParent) {
-            return;
-        }
-        if(move) {
-            if(parent != null) {
-                parent.remove(this);
-            }
-            if(newParent != null) {
-                newParent.add(this);
-            }
-        }
-        parent = newParent;
     }
 
     @Override

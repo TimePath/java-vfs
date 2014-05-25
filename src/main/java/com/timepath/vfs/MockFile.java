@@ -24,7 +24,7 @@ public class MockFile extends SimpleVFile {
     }
 
     @Override
-    public InputStream stream() {
+    public InputStream openStream() {
         return new ByteArrayInputStream(cont.getBytes());
     }
 

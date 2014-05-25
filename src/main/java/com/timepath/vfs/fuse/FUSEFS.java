@@ -49,7 +49,7 @@ public class FUSEFS extends VFSStub implements Runnable {
             public int read(String path, ByteBuffer buffer, long size, long offset, FileInfoWrapper info) {
                 VFile<?> file = get(path);
                 if(file != null) {
-                    InputStream stream = file.stream();
+                    InputStream stream = file.openStream();
                     try {
                         stream.skip(offset);
                         byte[] buf = new byte[(int) Math.max(Math.min(size, stream.available()), 0)];

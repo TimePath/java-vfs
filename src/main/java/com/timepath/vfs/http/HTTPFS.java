@@ -106,7 +106,7 @@ public class HTTPFS extends VFSStub implements Runnable {
                             SimpleVFile file = get(req);
                             LOG.log(Level.FINE, "*** GETing {0}", req);
                             if(file != null) {
-                                InputStream stream = file.stream();
+                                InputStream stream = file.openStream();
                                 if(stream != null) {
                                     out(pw, http + " 200 OK");
                                     out(pw, "");

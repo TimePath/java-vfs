@@ -365,7 +365,7 @@ public class FTPFS extends VFSStub implements Runnable {
                                     data = pasv.accept();
                                 }
                                 try {
-                                    InputStream is = f.stream();
+                                    InputStream is = f.openStream();
                                     is.skip(toSkip);
                                     OutputStream os = data.getOutputStream();
                                     // anonymous clients seem to request this much and then quit

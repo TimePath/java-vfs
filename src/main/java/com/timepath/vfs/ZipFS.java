@@ -54,7 +54,7 @@ public class ZipFS extends VFSStub {
         }
 
         @Override
-        public InputStream stream() {
+        public InputStream openStream() {
             return new ByteArrayInputStream(data);
         }
 

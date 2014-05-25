@@ -25,12 +25,22 @@ public interface VFile<V extends VFile<?>> {
 
     boolean exists();
 
+    /**
+     * @return the file name without {@code SEPARATOR}s
+     */
     String getName();
 
     V getParent();
 
     Collection<? extends V> list();
 
+    /**
+     * Get a file separated by {@code SEPARATOR}
+     *
+     * @param path
+     *
+     * @return the file, or null
+     */
     V get(String path);
 
     String getPath();
@@ -63,5 +73,10 @@ public interface VFile<V extends VFile<?>> {
 
     boolean setWritable(boolean writable, boolean ownerOnly);
 
-    InputStream stream();
+    InputStream openStream();
+
+    /**
+     * @return some identifier, may contain {@code SEPARATOR} unlike {@link #getName()}
+     */
+    String toString();
 }
