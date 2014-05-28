@@ -12,7 +12,7 @@ public class VFSStub extends SimpleVFile {
         this(null);
     }
 
-    private VFSStub(String name) {
+    protected VFSStub(String name) {
         if(name == null) {
             name = toString();
         } this.name = name;
