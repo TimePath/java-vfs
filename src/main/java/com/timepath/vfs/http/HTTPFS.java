@@ -103,7 +103,7 @@ public class HTTPFS extends VFSStub implements Runnable {
                             if(req.equals(SEPARATOR)) {
                                 req = "/index.html";
                             }
-                            SimpleVFile file = get(req);
+                            SimpleVFile file = query(req);
                             LOG.log(Level.FINE, "*** GETing {0}", req);
                             if(file != null) {
                                 InputStream stream = file.openStream();

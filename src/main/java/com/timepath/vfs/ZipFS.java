@@ -27,7 +27,7 @@ public class ZipFS extends VFSStub {
             SimpleVFile dir = this;
             for(int i = 0; i < ( split.length - 1 ); i++) {
                 String dirName = split[i];
-                SimpleVFile sub = dir.get(dirName);
+                SimpleVFile sub = dir.query(dirName);
                 if(sub == null) {
                     sub = new MockFile(dirName);
                     dir.add(sub);

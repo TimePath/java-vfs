@@ -32,7 +32,7 @@ public class FUSEFS extends VFSStub implements Runnable {
         fuse = new FuseFilesystemAdapterFull() {
             @Override
             public int getattr(String path, StatWrapper stat) {
-                VFile<?> file = get(path);
+                VFile<?> file = query(path);
                 if(file == null) {
                     return -ErrorCodes.ENOENT();
                 }
@@ -47,7 +47,7 @@ public class FUSEFS extends VFSStub implements Runnable {
 
             @Override
             public int read(String path, ByteBuffer buffer, long size, long offset, FileInfoWrapper info) {
-                VFile<?> file = get(path);
+                VFile<?> file = query(path);
                 if(file != null) {
                     InputStream stream = file.openStream();
                     try {
@@ -65,7 +65,7 @@ public class FUSEFS extends VFSStub implements Runnable {
 
             @Override
             public int readdir(String path, DirectoryFiller filler) {
-                VFile<?> file = get(path);
+                VFile<?> file = query(path);
                 if(file == null) {
                     return -ErrorCodes.ENOENT();
                 }

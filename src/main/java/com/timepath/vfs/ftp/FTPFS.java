@@ -139,8 +139,9 @@ public class FTPFS extends VFSStub implements Runnable {
 
     public static void main(String... args) throws IOException {
         FTPFS f = new FTPFS(2121, null);
-        f.add(new MockFile("test.txt", "It works!"));
-        f.add(new MockFile("world.txt", "Hello world"));
+        f.add(new MockFile("test.txt", "It works!"))
+         .add(new MockFile("world.txt", "Hello world"))
+         .add(new MockFile("folder").add(new MockFile("file", "test")));
         f.run();
     }
 
@@ -273,7 +274,7 @@ public class FTPFS extends VFSStub implements Runnable {
                             String req = cmd.substring(5);
                             String ch;
                             ch = req.startsWith(VFile.SEPARATOR) ? req : canonicalize(cwd + VFile.SEPARATOR + req);
-                            SimpleVFile f = get(ch);
+                            SimpleVFile f = query(ch);
                             if(( f == null ) || f.isDirectory()) {
                                 out(pw, "550 Could not get file size.");
                             } else {
@@ -295,15 +296,12 @@ public class FTPFS extends VFSStub implements Runnable {
                                 ch = canonicalize(cwd + "/..");
                             } else {
                                 String dir = canonicalize(cmd.substring(4));
-                                if(dir.length() > 1) {
-                                    dir = dir.substring(1);
-                                }
                                 if(!dir.endsWith(VFile.SEPARATOR)) {
                                     dir += VFile.SEPARATOR;
                                 }
                                 ch = dir.startsWith(VFile.SEPARATOR) ? dir : canonicalize(cwd + VFile.SEPARATOR + dir);
                             }
-                            SimpleVFile f = get(ch);
+                            SimpleVFile f = query(ch);
                             if(( f != null ) && f.isDirectory()) {
                                 out(pw, "250 Directory successfully changed.");
                                 cwd = ch;
@@ -316,7 +314,7 @@ public class FTPFS extends VFSStub implements Runnable {
                                 data = pasv.accept();
                             }
                             PrintWriter out = new PrintWriter(data.getOutputStream(), true);
-                            SimpleVFile v = get(cwd);
+                            SimpleVFile v = query(cwd);
                             final List<SimpleVFile> files = new LinkedList<>(v.list());
                             Collections.sort(files, nameComparator);
                             ExecutorService executor = Executors.newCachedThreadPool();
@@ -345,7 +343,7 @@ public class FTPFS extends VFSStub implements Runnable {
                             String req = cmd.substring(5);
                             String ch;
                             ch = req.startsWith(VFile.SEPARATOR) ? req : canonicalize(cwd + VFile.SEPARATOR + req);
-                            SimpleVFile f = get(ch);
+                            SimpleVFile f = query(ch);
                             Calendar cal = Calendar.getInstance();
                             cal.setTimeInMillis(f.lastModified());
                             out(pw, "200 " + mdtm.format(cal.getTime()));
@@ -358,7 +356,7 @@ public class FTPFS extends VFSStub implements Runnable {
                             String req = cmd.substring(5);
                             String ch;
                             ch = req.startsWith(VFile.SEPARATOR) ? req : canonicalize(cwd + VFile.SEPARATOR + req);
-                            SimpleVFile f = get(ch);
+                            SimpleVFile f = query(ch);
                             if(( f != null ) && !f.isDirectory()) {
                                 out(pw, "150 Opening BINARY mode data connection for file");
                                 if(pasv != null) {
@@ -410,7 +408,7 @@ public class FTPFS extends VFSStub implements Runnable {
                             out(pw, "250 Renamed");
                         } else if(cmd.toUpperCase().startsWith("MKD")) {
                             String folder = cmd.substring(4);
-                            SimpleVFile f = get(folder);
+                            SimpleVFile f = query(folder);
                             if(( f != null ) && f.isDirectory()) {
                                 out(pw, "550 Failed to create directory. (it exists)");
                             } else {

@@ -35,13 +35,13 @@ public interface VFile<V extends VFile<?>> {
     Collection<? extends V> list();
 
     /**
-     * Get a file separated by {@code SEPARATOR}
+     * Get a file by literal name
      *
-     * @param path
+     * @param name
      *
      * @return the file, or null
      */
-    V get(String path);
+    V get(String name);
 
     String getPath();
 
