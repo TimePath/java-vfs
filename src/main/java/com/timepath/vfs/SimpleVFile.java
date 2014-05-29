@@ -91,9 +91,13 @@ public abstract class SimpleVFile implements VFile<SimpleVFile>, MutableVFile<Si
     @Override
     public SimpleVFile get(String path) {
         if(path == null) throw new IllegalArgumentException("path cannot be null");
-        // sanitize input
+        String[] split = path.split(VFile.SEPARATOR);
+        // prevent infinite recursion
+        if(split.length == 1) {
+            return files.get(path);
+        }
         Deque<String> stack = new LinkedList<>();
-        for(String token : path.split(VFile.SEPARATOR)) {
+        for(String token : split) {
             switch(token) {
                 case "": // ignore repeated separator
                     break;
