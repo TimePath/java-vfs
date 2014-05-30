@@ -127,7 +127,6 @@ public class HTTPFS extends VFSStub implements Runnable {
                         LOG.log(Level.SEVERE, null, ex);
                     }
                     client.close();
-                    break;
                 }
                 LOG.log(Level.FINE, "{0} closed.", client);
             } catch(IOException ex) {
