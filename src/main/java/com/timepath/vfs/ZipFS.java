@@ -25,9 +25,10 @@ public class ZipFS extends VFSStub {
             }
             String[] split = DIRECTORYSPLIT.split(e.getName());
             SimpleVFile dir = this;
+            // create transient directories
             for(int i = 0; i < ( split.length - 1 ); i++) {
                 String dirName = split[i];
-                SimpleVFile sub = dir.query(dirName);
+                SimpleVFile sub = dir.get(dirName);
                 if(sub == null) {
                     sub = new MockFile(dirName);
                     dir.add(sub);
@@ -50,7 +51,8 @@ public class ZipFS extends VFSStub {
 
         @Override
         public String getName() {
-            return entry.getName();
+            String name = entry.getName();
+            return name.substring(name.lastIndexOf('/') + 1);
         }
 
         @Override
@@ -61,6 +63,11 @@ public class ZipFS extends VFSStub {
         @Override
         public boolean isDirectory() {
             return entry.isDirectory();
+        }
+
+        @Override
+        public long length() {
+            return entry.getSize();
         }
     }
 }
