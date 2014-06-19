@@ -1,0 +1,5 @@
+description = ''
+dependencies {
+  compile 'fuse-jna:fuse-jna:1.0.3'
+  compile project(':commons')
+}
