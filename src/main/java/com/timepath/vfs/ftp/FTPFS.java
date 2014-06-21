@@ -133,8 +133,7 @@ public class FTPFS extends VFSStub implements Runnable {
         sb.append(df.format(cal.getTime()));
         sb.append(' ');
         sb.append(file.getName());
-        String str = sb.toString();
-        return str;
+        return sb.toString();
     }
 
     public static void main(String... args) throws IOException {

@@ -387,7 +387,7 @@ public abstract class SimpleVFile implements VFile<SimpleVFile>, MutableVFile<Si
     }
 
     private void removeImpl(SimpleVFile file) {
-        SimpleVFile removed = files.remove(file);
+        SimpleVFile removed = files.remove(file.getName());
         if(removed != null) {
             removed.setParent(null);
         }
