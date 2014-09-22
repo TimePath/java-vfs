@@ -20,8 +20,8 @@ import java.util.logging.Logger;
  */
 public class HTTPFS extends VFSStub implements Runnable {
 
-    private static final Logger          LOG  = Logger.getLogger(HTTPFS.class.getName());
-    private final        ExecutorService pool = Executors.newFixedThreadPool(10, new ThreadFactory() {
+    private static final Logger LOG = Logger.getLogger(HTTPFS.class.getName());
+    private final ExecutorService pool = Executors.newFixedThreadPool(10, new ThreadFactory() {
         @Override
         public Thread newThread(Runnable r) {
             Thread t = Executors.defaultThreadFactory().newThread(r);
@@ -40,11 +40,11 @@ public class HTTPFS extends VFSStub implements Runnable {
     }
 
     private HTTPFS(int port, InetAddress addr) throws IOException, UnknownHostException {
-        if(addr == null) { // On windows, this prevents firewall warnings. It's also good for security in general
+        if (addr == null) { // On windows, this prevents firewall warnings. It's also good for security in general
             addr = InetAddress.getByName(null); // cannot use java7 InetAddress.getLoopbackAddress().
         }
         servsock = new ServerSocket(port, 0, addr);
-        LOG.log(Level.INFO, "Listening on {0}:{1}", new Object[] {
+        LOG.log(Level.INFO, "Listening on {0}:{1}", new Object[]{
                 servsock.getInetAddress().getHostAddress(), servsock.getLocalPort()
         });
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
@@ -74,6 +74,17 @@ public class HTTPFS extends VFSStub implements Runnable {
         LOG.log(Level.FINE, ">>> {0}", cmd);
     }
 
+    @Override
+    public void run() {
+        while (true) {
+            try {
+                pool.submit(new HTTPConnection(servsock.accept()));
+            } catch (IOException ex) {
+                LOG.log(Level.SEVERE, null, ex);
+            }
+        }
+    }
+
     private class HTTPConnection implements Runnable {
 
         private final Socket client;
@@ -90,29 +101,29 @@ public class HTTPFS extends VFSStub implements Runnable {
                 BufferedOutputStream os = new BufferedOutputStream(client.getOutputStream());
                 BufferedReader br = new BufferedReader(new InputStreamReader(is));
                 PrintWriter pw = new PrintWriter(os, true);
-                while(!client.isClosed()) {
+                while (!client.isClosed()) {
                     try {
                         String cmd = in(br);
-                        if(cmd == null) {
+                        if (cmd == null) {
                             client.close();
                             break;
-                        } else if(cmd.startsWith("GET")) {
+                        } else if (cmd.startsWith("GET")) {
                             String[] args = cmd.substring(4).split(" ");
                             String req = args[0];
                             String http = args[1];
-                            if(req.equals(SEPARATOR)) {
+                            if (req.equals(SEPARATOR)) {
                                 req = "/index.html";
                             }
                             SimpleVFile file = query(req);
                             LOG.log(Level.FINE, "*** GETing {0}", req);
-                            if(file != null) {
+                            if (file != null) {
                                 InputStream stream = file.openStream();
-                                if(stream != null) {
+                                if (stream != null) {
                                     out(pw, http + " 200 OK");
                                     out(pw, "");
                                     byte[] buf = new byte[1024 * 8];
                                     int read;
-                                    while(( read = stream.read(buf) ) > -1) {
+                                    while ((read = stream.read(buf)) > -1) {
                                         os.write(buf, 0, read);
                                         os.flush();
                                     }
@@ -123,24 +134,13 @@ public class HTTPFS extends VFSStub implements Runnable {
                                 out(pw, "");
                             }
                         }
-                    } catch(Exception ex) {
+                    } catch (Exception ex) {
                         LOG.log(Level.SEVERE, null, ex);
                     }
                     client.close();
                 }
                 LOG.log(Level.FINE, "{0} closed.", client);
-            } catch(IOException ex) {
-                LOG.log(Level.SEVERE, null, ex);
-            }
-        }
-    }
-
-    @Override
-    public void run() {
-        while(true) {
-            try {
-                pool.submit(new HTTPConnection(servsock.accept()));
-            } catch(IOException ex) {
+            } catch (IOException ex) {
                 LOG.log(Level.SEVERE, null, ex);
             }
         }

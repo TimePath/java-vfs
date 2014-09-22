@@ -4,9 +4,7 @@ import java.io.InputStream;
 import java.util.Collection;
 
 /**
- * @param <V>
- *         Specific type of VFile
- *
+ * @param <V> Specific type of VFile
  * @author TimePath
  */
 public interface VFile<V extends VFile<?>> {
@@ -38,7 +36,6 @@ public interface VFile<V extends VFile<?>> {
      * Get a file by literal name
      *
      * @param name
-     *
      * @return the file, or null
      */
     V get(String name);

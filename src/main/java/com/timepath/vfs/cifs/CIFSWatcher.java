@@ -46,13 +46,13 @@ public class CIFSWatcher {
 
                 @Override
                 public void run() {
-                    while(true) {
+                    while (true) {
                         final Socket client;
                         try {
                             LOG.info("Waiting for client...");
                             client = sock.accept();
                             LOG.info("Connected");
-                        } catch(IOException ex) {
+                        } catch (IOException ex) {
                             Logger.getLogger(CIFSWatcher.class.getName()).log(Level.SEVERE, null, ex);
                             continue;
                         }
@@ -62,23 +62,23 @@ public class CIFSWatcher {
                                 try {
                                     InputStream is = client.getInputStream();
                                     OutputStream os = client.getOutputStream();
-                                    while(!client.isClosed()) {
+                                    while (!client.isClosed()) {
                                         try {
                                             byte[] buf = new byte[200];
-                                            while(is.read(buf) != -1) {
+                                            while (is.read(buf) != -1) {
                                                 String text = new String(buf).trim();
                                                 LOG.info(Arrays.toString(text.getBytes()));
                                                 LOG.info(text);
                                             }
                                             // TODO: Packet handling
-                                        } catch(Exception ex) {
+                                        } catch (Exception ex) {
                                             LOG.log(Level.SEVERE, null, ex);
                                             client.close();
                                             break;
                                         }
                                     }
                                     LOG.info("Socket closed");
-                                } catch(IOException ex) {
+                                } catch (IOException ex) {
                                     Logger.getLogger(CIFSWatcher.class.getName()).log(Level.SEVERE, null, ex);
                                 }
                             }
@@ -87,7 +87,8 @@ public class CIFSWatcher {
 
                                 private int header; // \0xFF S M B
 
-                                Packet() {}
+                                Packet() {
+                                }
 
                                 private Packet read(InputStream is) throws IOException {
                                     ByteBuffer buf = ByteBuffer.allocate(42); // Average CIFS header size
@@ -114,7 +115,7 @@ public class CIFSWatcher {
                                     is.read(words);
                                     ByteBuffer wordBuffer = ByteBuffer.wrap(words);
                                     parameterWords = new short[wordCount];
-                                    for(int i = 0; i < words.length; i++) {
+                                    for (int i = 0; i < words.length; i++) {
                                         parameterWords[i] = wordBuffer.getShort();
                                     }
                                     int payloadLength = is.read();
@@ -123,7 +124,7 @@ public class CIFSWatcher {
                                     return this;
                                 }
 
-                                private byte    command;
+                                private byte command;
                                 /**
                                  * ERRDOS (0x01) –
                                  * Error is from the
@@ -142,12 +143,12 @@ public class CIFSWatcher {
                                  * in the “SMB”
                                  * format
                                  */
-                                private byte    errorClass;
+                                private byte errorClass;
                                 /**
                                  * As specified in
                                  * CIFS1.0 draft
                                  */
-                                private short   errorCode;
+                                private short errorCode;
                                 /**
                                  * When bit 3 is set
                                  * to ‘1’, all pathnames
@@ -159,7 +160,7 @@ public class CIFSWatcher {
                                  * to ‘0’, all pathnames
                                  * are case sensitive
                                  */
-                                private byte    flags;
+                                private byte flags;
                                 /**
                                  * Bit 0, if set,
                                  * indicates that
@@ -178,17 +179,17 @@ public class CIFSWatcher {
                                  * encoded
                                  * as UNICODE
                                  */
-                                private short   flags2;
+                                private short flags2;
                                 /**
                                  * Typically zero
                                  */
-                                private long    secure;
-                                private short   tid;
-                                private byte[]  buffer;
+                                private long secure;
+                                private short tid;
+                                private byte[] buffer;
                                 private short[] parameterWords;
-                                private short   pid;
-                                private short   uid;
-                                private short   mid;
+                                private short pid;
+                                private short uid;
+                                private short mid;
 
                                 byte[] getBytes() {
                                     return null;
@@ -198,21 +199,21 @@ public class CIFSWatcher {
                     }
                 }
             }, "CIFS Server").start();
-        } catch(IOException ex) {
+        } catch (IOException ex) {
             Logger.getLogger(CIFSWatcher.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
     public static void main(String... args) {
         int port = 8000;
-        if(args.length >= 1) {
+        if (args.length >= 1) {
             port = Integer.parseInt(args[0]);
         }
         getInstance(port);
     }
 
     private static CIFSWatcher getInstance(int port) {
-        if(instance == null) {
+        if (instance == null) {
             instance = new CIFSWatcher(port);
         }
         return instance;

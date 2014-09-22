@@ -13,9 +13,10 @@ public class VFSStub extends SimpleVFile {
     }
 
     protected VFSStub(String name) {
-        if(name == null) {
+        if (name == null) {
             name = toString();
-        } this.name = name;
+        }
+        this.name = name;
     }
 
     @Override

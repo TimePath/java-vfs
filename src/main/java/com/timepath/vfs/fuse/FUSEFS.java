@@ -22,7 +22,7 @@ public class FUSEFS extends VFSStub implements Runnable {
 
     private static final Logger LOG = Logger.getLogger(FUSEFS.class.getName());
     private final FuseFilesystemAdapterFull fuse;
-    private final String                    mountpoint;
+    private final String mountpoint;
 
     private FUSEFS(File mountpoint) {
         this(mountpoint.getPath());
@@ -33,10 +33,10 @@ public class FUSEFS extends VFSStub implements Runnable {
             @Override
             public int getattr(String path, StatWrapper stat) {
                 VFile<?> file = query(path);
-                if(file == null) {
+                if (file == null) {
                     return -ErrorCodes.ENOENT();
                 }
-                if(file.isDirectory()) {
+                if (file.isDirectory()) {
                     stat.setMode(NodeType.DIRECTORY);
                 } else {
                     stat.setMode(NodeType.FILE);
@@ -48,7 +48,7 @@ public class FUSEFS extends VFSStub implements Runnable {
             @Override
             public int read(String path, ByteBuffer buffer, long size, long offset, FileInfoWrapper info) {
                 VFile<?> file = query(path);
-                if(file != null) {
+                if (file != null) {
                     InputStream stream = file.openStream();
                     try {
                         stream.skip(offset);
@@ -56,7 +56,7 @@ public class FUSEFS extends VFSStub implements Runnable {
                         stream.read(buf);
                         buffer.put(buf);
                         return buf.length;
-                    } catch(IOException ex) {
+                    } catch (IOException ex) {
                         LOG.log(Level.SEVERE, null, ex);
                     }
                 }
@@ -66,10 +66,10 @@ public class FUSEFS extends VFSStub implements Runnable {
             @Override
             public int readdir(String path, DirectoryFiller filler) {
                 VFile<?> file = query(path);
-                if(file == null) {
+                if (file == null) {
                     return -ErrorCodes.ENOENT();
                 }
-                for(VFile<?> vf : file.list()) {
+                for (VFile<?> vf : file.list()) {
                     filler.add(path + SEPARATOR + vf.getName());
                 }
                 return 0;
@@ -91,7 +91,7 @@ public class FUSEFS extends VFSStub implements Runnable {
         try {
             LOG.log(Level.INFO, "Mounted on {0}", mountpoint);
             fuse.mount(mountpoint);
-        } catch(FuseException ex) {
+        } catch (FuseException ex) {
             LOG.log(Level.SEVERE, null, ex);
         } finally {
             LOG.log(Level.INFO, "Unmounted");

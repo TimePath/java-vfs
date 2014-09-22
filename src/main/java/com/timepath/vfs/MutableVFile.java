@@ -1,9 +1,7 @@
 package com.timepath.vfs;
 
 /**
- * @param <V>
- *         Specific type of VFile
- *
+ * @param <V> Specific type of VFile
  * @author TimePath
  */
 public interface MutableVFile<V extends VFile<?>> {
