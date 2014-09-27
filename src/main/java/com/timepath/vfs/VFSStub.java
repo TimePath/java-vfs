@@ -9,7 +9,7 @@ import java.util.logging.Logger;
 public class VFSStub extends SimpleVFile {
 
     private static final Logger LOG = Logger.getLogger(VFSStub.class.getName());
-    @Nullable
+    @NotNull
     public String name;
 
     protected VFSStub() {
@@ -23,7 +23,7 @@ public class VFSStub extends SimpleVFile {
         this.name = name;
     }
 
-    @Nullable
+    @NotNull
     @Override
     public String getName() {
         return name;

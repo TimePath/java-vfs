@@ -1,5 +1,6 @@
 package com.timepath.vfs;
 
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.InputStream;
@@ -28,13 +29,13 @@ public interface VFile<V extends VFile<?>> {
     /**
      * @return the file name without {@code SEPARATOR}s
      */
-    @Nullable
+    @NotNull
     String getName();
 
     @Nullable
     V getParent();
 
-    @Nullable
+    @NotNull
     Collection<? extends V> list();
 
     /**
@@ -46,6 +47,7 @@ public interface VFile<V extends VFile<?>> {
     @Nullable
     V get(String name);
 
+    @Nullable
     String getPath();
 
     long getTotalSpace();
@@ -82,5 +84,6 @@ public interface VFile<V extends VFile<?>> {
     /**
      * @return some identifier, may contain {@code SEPARATOR} unlike {@link #getName()}
      */
+    @NotNull
     String toString();
 }

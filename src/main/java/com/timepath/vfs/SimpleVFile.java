@@ -81,7 +81,7 @@ public abstract class SimpleVFile implements VFile<SimpleVFile>, MutableVFile<Si
         return parent;
     }
 
-    @Nullable
+    @NotNull
     @Override
     public Collection<? extends SimpleVFile> list() {
         return files.values();
@@ -404,7 +404,7 @@ public abstract class SimpleVFile implements VFile<SimpleVFile>, MutableVFile<Si
         }
     }
 
-    @Nullable
+    @NotNull
     @Override
     public String toString() {
         return getName();

@@ -20,6 +20,7 @@ public class MockFile extends SimpleVFile {
         this.cont = cont;
     }
 
+    @NotNull
     @Override
     public String getName() {
         return name;
