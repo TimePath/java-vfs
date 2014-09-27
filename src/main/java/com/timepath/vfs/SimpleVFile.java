@@ -1,6 +1,8 @@
 package com.timepath.vfs;
 
 import com.timepath.io.utils.ViewableData;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.io.*;
@@ -18,11 +20,14 @@ public abstract class SimpleVFile implements VFile<SimpleVFile>, MutableVFile<Si
     private static final Logger LOG = Logger.getLogger(SimpleVFile.class.getName());
     private static final String DEFAULT_GROUP = System.getProperty("user.name", "nobody");
     private static final String DEFAULT_OWNER = System.getProperty("user.name", "nobody");
+    @NotNull
     protected static List<MissingFileHandler> missingFileHandlers = new LinkedList<>();
     protected final Map<String, SimpleVFile> files;
+    @NotNull
     private final Collection<FileChangeListener> listeners;
     private long length;
     private long lastModified;
+    @Nullable
     private SimpleVFile parent;
 
     protected SimpleVFile() {
@@ -70,30 +75,34 @@ public abstract class SimpleVFile implements VFile<SimpleVFile>, MutableVFile<Si
         return true;
     }
 
+    @Nullable
     @Override
     public SimpleVFile getParent() {
         return parent;
     }
 
+    @Nullable
     @Override
     public Collection<? extends SimpleVFile> list() {
         return files.values();
     }
 
+    @Nullable
     @Override
     public SimpleVFile get(String name) {
         SimpleVFile f = files.get(name);
         if (f != null) return f;
-        for (MissingFileHandler h : missingFileHandlers) {
-            SimpleVFile root = h.handle(this, name);
+        for (@NotNull MissingFileHandler h : missingFileHandlers) {
+            @Nullable SimpleVFile root = h.handle(this, name);
             if (root != null) return root;
         }
         return null;
     }
 
+    @Nullable
     @Override
     public String getPath() {
-        String path = (isDirectory() ? getName() : "");
+        @Nullable String path = (isDirectory() ? getName() : "");
         path = path.replaceAll(VFile.SEPARATOR, ""); // just in case
         if (parent != null) {
             path = parent.getPath() + VFile.SEPARATOR + path;
@@ -186,7 +195,7 @@ public abstract class SimpleVFile implements VFile<SimpleVFile>, MutableVFile<Si
         return -1;
     }
 
-    public boolean setParent(SimpleVFile newParent) {
+    public boolean setParent(@Nullable SimpleVFile newParent) {
         if (parent == newParent) {
             return false;
         }
@@ -207,14 +216,15 @@ public abstract class SimpleVFile implements VFile<SimpleVFile>, MutableVFile<Si
      * @param path
      * @return the file, or null
      */
-    public SimpleVFile query(String path) {
+    @Nullable
+    public SimpleVFile query(@Nullable String path) {
         if (path == null) throw new IllegalArgumentException("path cannot be null");
-        String[] split = path.split(VFile.SEPARATOR);
+        @NotNull String[] split = path.split(VFile.SEPARATOR);
         if (split.length == 1) {
             return get(path);
         }
-        Deque<String> stack = new LinkedList<>();
-        for (String token : split) {
+        @NotNull Deque<String> stack = new LinkedList<>();
+        for (@NotNull String token : split) {
             switch (token) {
                 case "": // ignore repeated separator
                     break;
@@ -231,7 +241,7 @@ public abstract class SimpleVFile implements VFile<SimpleVFile>, MutableVFile<Si
             }
         }
         LOG.log(Level.FINE, "Getting {0}", stack);
-        SimpleVFile result = this;
+        @Nullable SimpleVFile result = this;
         for (String token : stack) {
             result = result.get(token);
             if (result == null) {
@@ -241,8 +251,9 @@ public abstract class SimpleVFile implements VFile<SimpleVFile>, MutableVFile<Si
         return result;
     }
 
+    @NotNull
     @Override
-    public SimpleVFile add(SimpleVFile file) {
+    public SimpleVFile add(@Nullable SimpleVFile file) {
         if (file == null) throw new IllegalArgumentException("file cannot be null");
         if (file == this) throw new IllegalArgumentException("file cannot be this");
         synchronized (files) {
@@ -251,10 +262,11 @@ public abstract class SimpleVFile implements VFile<SimpleVFile>, MutableVFile<Si
         return this;
     }
 
+    @NotNull
     @Override
-    public SimpleVFile addAll(Iterable<? extends SimpleVFile> c) {
+    public SimpleVFile addAll(@NotNull Iterable<? extends SimpleVFile> c) {
         synchronized (files) {
-            for (SimpleVFile f : c) {
+            for (@NotNull SimpleVFile f : c) {
                 addImpl(f);
             }
         }
@@ -262,7 +274,7 @@ public abstract class SimpleVFile implements VFile<SimpleVFile>, MutableVFile<Si
     }
 
     @Override
-    public void remove(SimpleVFile file) {
+    public void remove(@Nullable SimpleVFile file) {
         if (file == null) throw new IllegalArgumentException("file cannot be null");
         if (file == this) throw new IllegalArgumentException("file cannot be this");
         synchronized (files) {
@@ -271,15 +283,15 @@ public abstract class SimpleVFile implements VFile<SimpleVFile>, MutableVFile<Si
     }
 
     @Override
-    public void removeAll(Iterable<? extends SimpleVFile> files) {
+    public void removeAll(@NotNull Iterable<? extends SimpleVFile> files) {
         synchronized (this.files) {
-            for (SimpleVFile file : files) {
+            for (@NotNull SimpleVFile file : files) {
                 removeImpl(file);
             }
         }
     }
 
-    private void addImpl(SimpleVFile file) {
+    private void addImpl(@NotNull SimpleVFile file) {
         if (!files.containsValue(file)) {
             if (!file.setParent(this)) {
                 files.put(file.getName(), file);
@@ -294,17 +306,17 @@ public abstract class SimpleVFile implements VFile<SimpleVFile>, MutableVFile<Si
      * @throws IOException
      */
     public void extract(File dir) throws IOException {
-        File out = new File(dir, getName());
+        @NotNull File out = new File(dir, getName());
         if (isDirectory()) {
             out.mkdir();
-            for (SimpleVFile f : list()) {
+            for (@NotNull SimpleVFile f : list()) {
                 f.extract(out);
             }
         } else {
             out.createNewFile();
-            InputStream is = new BufferedInputStream(openStream());
-            try (BufferedOutputStream os = new BufferedOutputStream(new FileOutputStream(out))) {
-                byte[] buf = new byte[1024 * 8]; // 8K read buffer
+            @NotNull InputStream is = new BufferedInputStream(openStream());
+            try (@NotNull BufferedOutputStream os = new BufferedOutputStream(new FileOutputStream(out))) {
+                @NotNull byte[] buf = new byte[1024 * 8]; // 8K read buffer
                 for (int read; (read = is.read(buf)) > -1; ) {
                     os.write(buf, 0, read);
                 }
@@ -314,21 +326,21 @@ public abstract class SimpleVFile implements VFile<SimpleVFile>, MutableVFile<Si
 
     @Override
     public void fileAdded(SimpleVFile f) {
-        for (FileChangeListener listener : listeners) {
+        for (@NotNull FileChangeListener listener : listeners) {
             listener.fileAdded(f);
         }
     }
 
     @Override
     public void fileModified(SimpleVFile f) {
-        for (FileChangeListener listener : listeners) {
+        for (@NotNull FileChangeListener listener : listeners) {
             listener.fileModified(f);
         }
     }
 
     @Override
     public void fileRemoved(SimpleVFile f) {
-        for (FileChangeListener listener : listeners) {
+        for (@NotNull FileChangeListener listener : listeners) {
             listener.fileRemoved(f);
         }
     }
@@ -339,15 +351,17 @@ public abstract class SimpleVFile implements VFile<SimpleVFile>, MutableVFile<Si
      * @param search
      * @return
      */
+    @Nullable
     public List<SimpleVFile> find(String search) {
         return find(search, this);
     }
 
-    private List<SimpleVFile> find(String search, SimpleVFile root) {
+    @NotNull
+    private List<SimpleVFile> find(String search, @NotNull SimpleVFile root) {
         search = search.toLowerCase();
-        List<SimpleVFile> list = new LinkedList<>();
-        for (SimpleVFile e : root.list()) {
-            String str = e.getName().toLowerCase();
+        @NotNull List<SimpleVFile> list = new LinkedList<>();
+        for (@NotNull SimpleVFile e : root.list()) {
+            @NotNull String str = e.getName().toLowerCase();
             if (str.contains(search)) {
                 list.add(e);
             }
@@ -358,10 +372,11 @@ public abstract class SimpleVFile implements VFile<SimpleVFile>, MutableVFile<Si
         return list;
     }
 
+    @Nullable
     @Override
     public Icon getIcon() {
         if (isDirectory()) {
-            Icon i = null;
+            @Nullable Icon i = null;
             if (parent == null) {
                 i = UIManager.getIcon("FileView.hardDriveIcon");
             }
@@ -382,13 +397,14 @@ public abstract class SimpleVFile implements VFile<SimpleVFile>, MutableVFile<Si
         return DEFAULT_OWNER;
     }
 
-    private void removeImpl(SimpleVFile file) {
+    private void removeImpl(@NotNull SimpleVFile file) {
         SimpleVFile removed = files.remove(file.getName());
         if (removed != null) {
             removed.setParent(null);
         }
     }
 
+    @Nullable
     @Override
     public String toString() {
         return getName();
@@ -396,6 +412,7 @@ public abstract class SimpleVFile implements VFile<SimpleVFile>, MutableVFile<Si
 
     public static interface MissingFileHandler {
 
+        @Nullable
         SimpleVFile handle(SimpleVFile parent, String name);
     }
 }

@@ -3,6 +3,8 @@ package com.timepath.vfs.jdbc;
 import com.timepath.vfs.MockFile;
 import com.timepath.vfs.SimpleVFile;
 import com.timepath.vfs.VFSStub;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.sql.*;
 import java.util.Collection;
@@ -16,27 +18,30 @@ import java.util.logging.Logger;
 public abstract class JDBCFS extends VFSStub {
 
     private static final Logger LOG = Logger.getLogger(JDBCFS.class.getName());
+    @NotNull
     protected final String url;
     protected final Connection conn;
 
-    public JDBCFS(String url) throws SQLException {
+    public JDBCFS(@NotNull String url) throws SQLException {
         this.url = url;
         this.name = url.replace('/', '\\');
         conn = DriverManager.getConnection(url);
     }
 
+    @Nullable
     @Override
-    public SimpleVFile get(final String name) {
-        for (SimpleVFile f : list()) if (name.equals(f.getName())) return f;
+    public SimpleVFile get(@NotNull final String name) {
+        for (@NotNull SimpleVFile f : list()) if (name.equals(f.getName())) return f;
         return null;
     }
 
+    @NotNull
     @Override
     public Collection<? extends SimpleVFile> list() {
-        LinkedList<JDBCTable> tableList = new LinkedList<>();
+        @NotNull LinkedList<JDBCTable> tableList = new LinkedList<>();
         try {
             DatabaseMetaData dbmd = conn.getMetaData();
-            String[] types = {"TABLE"};
+            @NotNull String[] types = {"TABLE"};
             ResultSet rs = dbmd.getTables(null, null, "%", types);
             while (rs.next()) {
                 tableList.add(new JDBCTable(rs.getString("TABLE_NAME")));
@@ -55,21 +60,23 @@ public abstract class JDBCFS extends VFSStub {
             super(name);
         }
 
+        @Nullable
         @Override
-        public SimpleVFile get(final String name) {
-            for (SimpleVFile f : list()) if (name.equals(f.getName())) return f;
+        public SimpleVFile get(@NotNull final String name) {
+            for (@NotNull SimpleVFile f : list()) if (name.equals(f.getName())) return f;
             return null;
         }
 
+        @NotNull
         @Override
         public Collection<? extends SimpleVFile> list() {
-            LinkedList<MockFile> rows = new LinkedList<>();
+            @NotNull LinkedList<MockFile> rows = new LinkedList<>();
             try {
                 PreparedStatement st = conn.prepareStatement(String.format("SELECT * FROM %s", getName()));
                 ResultSet rs = st.executeQuery();
                 int len = rs.getMetaData().getColumnCount();
                 while (rs.next()) {
-                    StringBuilder sb = new StringBuilder();
+                    @NotNull StringBuilder sb = new StringBuilder();
                     for (int i = 0; i < len; i++) {
                         sb.append('\t').append(rs.getString(i + 1));
                     }

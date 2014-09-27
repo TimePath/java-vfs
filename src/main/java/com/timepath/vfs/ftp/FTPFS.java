@@ -4,6 +4,8 @@ import com.timepath.vfs.MockFile;
 import com.timepath.vfs.SimpleVFile;
 import com.timepath.vfs.VFSStub;
 import com.timepath.vfs.VFile;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
 import java.net.InetAddress;
@@ -46,7 +48,7 @@ public class FTPFS extends VFSStub implements Runnable {
     private static final DateFormat mdtm = new SimpleDateFormat("yyyyMMddhhmmss");
     private final ExecutorService pool = Executors.newFixedThreadPool(10, new ThreadFactory() {
         @Override
-        public Thread newThread(Runnable r) {
+        public Thread newThread(@NotNull Runnable r) {
             Thread t = Executors.defaultThreadFactory().newThread(r);
             t.setDaemon(false);
             return t;
@@ -55,7 +57,7 @@ public class FTPFS extends VFSStub implements Runnable {
     private final int port;
     private final Comparator<SimpleVFile> nameComparator = new Comparator<SimpleVFile>() {
         @Override
-        public int compare(SimpleVFile o1, SimpleVFile o2) {
+        public int compare(@NotNull SimpleVFile o1, @NotNull SimpleVFile o2) {
             return o1.getName().compareTo(o2.getName());
         }
     };
@@ -90,18 +92,19 @@ public class FTPFS extends VFSStub implements Runnable {
         bind();
     }
 
-    private static String toFTPString(SimpleVFile file) {
+    @NotNull
+    private static String toFTPString(@NotNull SimpleVFile file) {
         char spec = '-'; // TODO: links
-        char[][] f = {{'r', '-', '-'}, {'r', '-', '-'}, {'r', '-', '-'}}; // RWX: User, Group, Everybody
+        @NotNull char[][] f = {{'r', '-', '-'}, {'r', '-', '-'}, {'r', '-', '-'}}; // RWX: User, Group, Everybody
         if (file.isDirectory()) {
             spec = 'd';
             f[0][1] = 'w';
             f[0][2] = 'x';
         }
         long fileSize = file.length();
-        String perms = String.valueOf(spec) + f[0][0] + f[0][1] + f[0][2] + f[1][0] + f[1][1] + f[1][2] + f[2][0] +
+        @NotNull String perms = String.valueOf(spec) + f[0][0] + f[0][1] + f[0][2] + f[1][0] + f[1][1] + f[1][2] + f[2][0] +
                 f[2][1] + f[2][2];
-        StringBuilder sb = new StringBuilder();
+        @NotNull StringBuilder sb = new StringBuilder();
         sb.append(perms);
         sb.append(' ');
         sb.append(String.format("%4s", fileSize)); // >= 4 left
@@ -116,9 +119,9 @@ public class FTPFS extends VFSStub implements Runnable {
         int y1 = cal.get(Calendar.YEAR);
         cal.setTimeInMillis(file.lastModified());
         int y2 = cal.get(Calendar.YEAR);
-        String sameYear = "MMM d HH:mm";
-        String diffYear = "MMM d yyyy";
-        SimpleDateFormat df = new SimpleDateFormat((y1 == y2) ? sameYear : diffYear);
+        @NotNull String sameYear = "MMM d HH:mm";
+        @NotNull String diffYear = "MMM d yyyy";
+        @NotNull SimpleDateFormat df = new SimpleDateFormat((y1 == y2) ? sameYear : diffYear);
         sb.append(df.format(cal.getTime()));
         sb.append(' ');
         sb.append(file.getName());
@@ -126,20 +129,20 @@ public class FTPFS extends VFSStub implements Runnable {
     }
 
     public static void main(String... args) throws IOException {
-        FTPFS f = new FTPFS(2121, null);
+        @NotNull FTPFS f = new FTPFS(2121, null);
         f.add(new MockFile("test.txt", "It works!"))
                 .add(new MockFile("world.txt", "Hello world"))
                 .add(new MockFile("folder").add(new MockFile("file", "test")));
         f.run();
     }
 
-    private static String in(BufferedReader in) throws IOException {
+    private static String in(@NotNull BufferedReader in) throws IOException {
         String s = in.readLine();
         LOG.log(Level.FINE, "<<< {0}", s);
         return s;
     }
 
-    private static void out(PrintWriter out, String cmd) {
+    private static void out(@NotNull PrintWriter out, String cmd) {
         out.print(cmd + "\r\n");
         out.flush();
         LOG.log(Level.FINE, ">>> {0}", cmd);
@@ -189,8 +192,8 @@ public class FTPFS extends VFSStub implements Runnable {
         public void run() {
             try {
                 byte[] h = servsock.getInetAddress().getAddress();
-                BufferedReader br = new BufferedReader(new InputStreamReader(client.getInputStream()));
-                PrintWriter pw = new PrintWriter(client.getOutputStream(), true);
+                @NotNull BufferedReader br = new BufferedReader(new InputStreamReader(client.getInputStream()));
+                @NotNull PrintWriter pw = new PrintWriter(client.getOutputStream(), true);
                 out(pw, "220 Welcome");
                 long skip = 0;
                 while (!client.isClosed()) {
@@ -223,19 +226,19 @@ public class FTPFS extends VFSStub implements Runnable {
                                 out(pw, "200 Switching to ASCII mode.");
                             }
                         } else if (cmd.toUpperCase().startsWith("PORT")) {
-                            String[] args = cmd.substring(5).split(",");
-                            String sep = ".";
-                            String dataAddress = args[0] + sep + args[1] + sep + args[2] + sep + args[3];
+                            @NotNull String[] args = cmd.substring(5).split(",");
+                            @NotNull String sep = ".";
+                            @NotNull String dataAddress = args[0] + sep + args[1] + sep + args[2] + sep + args[3];
                             int dataPort = (Integer.parseInt(args[4]) * 256) + Integer.parseInt(args[5]);
                             data = new Socket(InetAddress.getByName(dataAddress), dataPort);
                             LOG.log(Level.INFO, "*** Data receiver: {0}", data);
                             out(pw, "200 PORT command successful.");
                         } else if (cmd.toUpperCase().startsWith("EPRT")) {
-                            String payload = cmd.substring(5);
+                            @NotNull String payload = cmd.substring(5);
                             //                            String delimeter = "\\x" + Integer.toHexString((int)
                             // payload.charAt(0));
                             String delimeter = Pattern.quote(String.valueOf(payload.charAt(0)));
-                            String[] args = payload.substring(1).split(delimeter);
+                            @NotNull String[] args = payload.substring(1).split(delimeter);
                             int type = Integer.parseInt(args[0]);
                             String dataAddress = args[1];
                             int dataPort = Integer.parseInt(args[2]);
@@ -247,7 +250,7 @@ public class FTPFS extends VFSStub implements Runnable {
                                 pasv.close();
                             }
                             pasv = new ServerSocket(0);
-                            int[] p = {
+                            @NotNull int[] p = {
                                     pasv.getLocalPort() / 256, pasv.getLocalPort() % 256
                             };
                             String con = String.format("%s,%s,%s,%s,%s,%s",
@@ -266,18 +269,18 @@ public class FTPFS extends VFSStub implements Runnable {
                             int p = pasv.getLocalPort();
                             out(pw, "229 Entering Extended Passive Mode (|||" + p + "|).");
                         } else if (cmd.toUpperCase().startsWith("SIZE")) {
-                            String req = cmd.substring(5);
+                            @NotNull String req = cmd.substring(5);
                             String ch;
                             ch = req.startsWith(VFile.SEPARATOR) ? req : canonicalize(cwd + VFile.SEPARATOR + req);
-                            SimpleVFile f = query(ch);
+                            @Nullable SimpleVFile f = query(ch);
                             if ((f == null) || f.isDirectory()) {
                                 out(pw, "550 Could not get file size.");
                             } else {
                                 out(pw, "213 " + f.length());
                             }
                         } else if (cmd.toUpperCase().startsWith("MODE")) {
-                            String[] modes = {"S", "B", "C"};
-                            String mode = cmd.substring(5);
+                            @NotNull String[] modes = {"S", "B", "C"};
+                            @NotNull String mode = cmd.substring(5);
                             boolean has = Arrays.asList(modes).contains(mode);
                             if (has) {
                                 out(pw, "200 Mode set to " + mode + '.');
@@ -296,7 +299,7 @@ public class FTPFS extends VFSStub implements Runnable {
                                 }
                                 ch = dir.startsWith(VFile.SEPARATOR) ? dir : canonicalize(cwd + VFile.SEPARATOR + dir);
                             }
-                            SimpleVFile f = query(ch);
+                            @Nullable SimpleVFile f = query(ch);
                             if ((f != null) && f.isDirectory()) {
                                 out(pw, "250 Directory successfully changed.");
                                 cwd = ch;
@@ -308,13 +311,13 @@ public class FTPFS extends VFSStub implements Runnable {
                             if (pasv != null) {
                                 data = pasv.accept();
                             }
-                            PrintWriter out = new PrintWriter(data.getOutputStream(), true);
-                            SimpleVFile v = query(cwd);
-                            final List<SimpleVFile> files = new LinkedList<>(v.list());
+                            @NotNull PrintWriter out = new PrintWriter(data.getOutputStream(), true);
+                            @Nullable SimpleVFile v = query(cwd);
+                            @NotNull final List<SimpleVFile> files = new LinkedList<>(v.list());
                             Collections.sort(files, nameComparator);
-                            ExecutorService executor = Executors.newCachedThreadPool();
-                            final CountDownLatch cdl = new CountDownLatch(files.size());
-                            final String[] lines = new String[files.size()];
+                            @NotNull ExecutorService executor = Executors.newCachedThreadPool();
+                            @NotNull final CountDownLatch cdl = new CountDownLatch(files.size());
+                            @NotNull final String[] lines = new String[files.size()];
                             for (int i = 0; i < lines.length; i++) {
                                 final int j = i;
                                 executor.submit(new Runnable() {
@@ -335,10 +338,10 @@ public class FTPFS extends VFSStub implements Runnable {
                             out(pw, "221 Goodbye");
                             break;
                         } else if (cmd.toUpperCase().startsWith("MDTM")) {
-                            String req = cmd.substring(5);
+                            @NotNull String req = cmd.substring(5);
                             String ch;
                             ch = req.startsWith(VFile.SEPARATOR) ? req : canonicalize(cwd + VFile.SEPARATOR + req);
-                            SimpleVFile f = query(ch);
+                            @Nullable SimpleVFile f = query(ch);
                             Calendar cal = Calendar.getInstance();
                             cal.setTimeInMillis(f.lastModified());
                             out(pw, "200 " + mdtm.format(cal.getTime()));
@@ -348,10 +351,10 @@ public class FTPFS extends VFSStub implements Runnable {
                         } else if (cmd.toUpperCase().startsWith("RETR")) {
                             long toSkip = skip;
                             skip = 0;
-                            String req = cmd.substring(5);
+                            @NotNull String req = cmd.substring(5);
                             String ch;
                             ch = req.startsWith(VFile.SEPARATOR) ? req : canonicalize(cwd + VFile.SEPARATOR + req);
-                            SimpleVFile f = query(ch);
+                            @Nullable SimpleVFile f = query(ch);
                             if ((f != null) && !f.isDirectory()) {
                                 out(pw, "150 Opening BINARY mode data connection for file");
                                 if (pasv != null) {
@@ -362,7 +365,7 @@ public class FTPFS extends VFSStub implements Runnable {
                                     is.skip(toSkip);
                                     OutputStream os = data.getOutputStream();
                                     // anonymous clients seem to request this much and then quit
-                                    byte[] buf = new byte[131072];
+                                    @NotNull byte[] buf = new byte[131072];
                                     int read;
                                     while ((read = is.read(buf)) > -1) {
                                         os.write(buf, 0, read);
@@ -384,7 +387,7 @@ public class FTPFS extends VFSStub implements Runnable {
                             out(pw, "550 Permission denied.");
                         } else if (cmd.toUpperCase().startsWith("FEAT")) {
                             out(pw, "211-Features:");
-                            String[] features = {"MDTM", "PASV"};
+                            @NotNull String[] features = {"MDTM", "PASV"};
                             Arrays.sort(features);
                             for (String feature : features) {
                                 out(pw, ' ' + feature);
@@ -397,13 +400,13 @@ public class FTPFS extends VFSStub implements Runnable {
                         } else if (cmd.toUpperCase().startsWith("SITE")) {
                             out(pw, "200 Nothing to see here");
                         } else if (cmd.toUpperCase().startsWith("RNFR")) { // Rename file
-                            String from = cmd.substring(5);
+                            @NotNull String from = cmd.substring(5);
                             out(pw, "350 Okay");
-                            String to = in(br).substring(5);
+                            @NotNull String to = in(br).substring(5);
                             out(pw, "250 Renamed");
                         } else if (cmd.toUpperCase().startsWith("MKD")) {
-                            String folder = cmd.substring(4);
-                            SimpleVFile f = query(folder);
+                            @NotNull String folder = cmd.substring(4);
+                            @Nullable SimpleVFile f = query(folder);
                             if ((f != null) && f.isDirectory()) {
                                 out(pw, "550 Failed to create directory. (it exists)");
                             } else {
@@ -411,13 +414,13 @@ public class FTPFS extends VFSStub implements Runnable {
                             }
                             files.put(folder, new MockFile(folder, null));
                         } else if (cmd.toUpperCase().startsWith("STOR")) { // Upload file
-                            String file = cmd.substring(5);
+                            @NotNull String file = cmd.substring(5);
                             out(pw, "150 Entering Transfer Mode");
                             if (pasv != null) {
                                 data = pasv.accept();
                             }
-                            BufferedReader in = new BufferedReader(new InputStreamReader(data.getInputStream()));
-                            PrintWriter out = new PrintWriter(data.getOutputStream(), true);
+                            @NotNull BufferedReader in = new BufferedReader(new InputStreamReader(data.getInputStream()));
+                            @NotNull PrintWriter out = new PrintWriter(data.getOutputStream(), true);
                             String line;
                             String text = "";
                             while ((line = in.readLine()) != null) {
@@ -429,7 +432,7 @@ public class FTPFS extends VFSStub implements Runnable {
                                 }
                             }
                             data.close();
-                            SimpleVFile f = new MockFile(file, text);
+                            @NotNull SimpleVFile f = new MockFile(file, text);
                             files.put(file, f);
                             fileModified(f);
                             LOG.log(Level.INFO, "***\r\n{0}", text);
@@ -437,7 +440,7 @@ public class FTPFS extends VFSStub implements Runnable {
                         } else if (cmd.toUpperCase().startsWith("NOOP")) {
                             out(pw, "200 NOOP ok.");
                         } else if (cmd.toUpperCase().startsWith("OPTS")) {
-                            String[] args = cmd.toUpperCase().substring(5).split(" ");
+                            @NotNull String[] args = cmd.toUpperCase().substring(5).split(" ");
                             String opt = args[0];
                             String status = args[1];
                             out(pw, "200 " + opt + " always " + status + '.');
@@ -458,13 +461,14 @@ public class FTPFS extends VFSStub implements Runnable {
             }
         }
 
-        private String canonicalize(String string) {
+        @NotNull
+        private String canonicalize(@NotNull String string) {
             if (string.endsWith(VFile.SEPARATOR)) {
                 string = string.substring(0, string.length() - 1);
             }
-            String[] split = string.split(VFile.SEPARATOR);
-            List<String> pieces = new LinkedList<>();
-            for (String s : split) {
+            @NotNull String[] split = string.split(VFile.SEPARATOR);
+            @NotNull List<String> pieces = new LinkedList<>();
+            for (@NotNull String s : split) {
                 if (s.isEmpty()) {
                 } else if ("..".equals(s)) {
                     if (pieces.size() > 2) {
@@ -474,11 +478,11 @@ public class FTPFS extends VFSStub implements Runnable {
                     pieces.add(s);
                 }
             }
-            StringBuilder sb = new StringBuilder();
+            @NotNull StringBuilder sb = new StringBuilder();
             for (String s : pieces) {
                 sb.append(VFile.SEPARATOR).append(s);
             }
-            String ret = sb.toString();
+            @NotNull String ret = sb.toString();
             LOG.log(Level.FINE, ret);
             return ret;
         }

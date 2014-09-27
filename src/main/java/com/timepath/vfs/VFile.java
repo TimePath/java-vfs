@@ -1,5 +1,7 @@
 package com.timepath.vfs;
 
+import org.jetbrains.annotations.Nullable;
+
 import java.io.InputStream;
 import java.util.Collection;
 
@@ -26,10 +28,13 @@ public interface VFile<V extends VFile<?>> {
     /**
      * @return the file name without {@code SEPARATOR}s
      */
+    @Nullable
     String getName();
 
+    @Nullable
     V getParent();
 
+    @Nullable
     Collection<? extends V> list();
 
     /**
@@ -38,6 +43,7 @@ public interface VFile<V extends VFile<?>> {
      * @param name
      * @return the file, or null
      */
+    @Nullable
     V get(String name);
 
     String getPath();
@@ -70,6 +76,7 @@ public interface VFile<V extends VFile<?>> {
 
     boolean setWritable(boolean writable, boolean ownerOnly);
 
+    @Nullable
     InputStream openStream();
 
     /**

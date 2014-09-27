@@ -3,6 +3,8 @@ package com.timepath.vfs.http;
 import com.timepath.vfs.MockFile;
 import com.timepath.vfs.SimpleVFile;
 import com.timepath.vfs.VFSStub;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
 import java.net.InetAddress;
@@ -23,12 +25,13 @@ public class HTTPFS extends VFSStub implements Runnable {
     private static final Logger LOG = Logger.getLogger(HTTPFS.class.getName());
     private final ExecutorService pool = Executors.newFixedThreadPool(10, new ThreadFactory() {
         @Override
-        public Thread newThread(Runnable r) {
+        public Thread newThread(@NotNull Runnable r) {
             Thread t = Executors.defaultThreadFactory().newThread(r);
             t.setDaemon(false);
             return t;
         }
     });
+    @NotNull
     private final ServerSocket servsock;
 
     public HTTPFS() throws IOException, UnknownHostException {
@@ -39,7 +42,7 @@ public class HTTPFS extends VFSStub implements Runnable {
         this(port, null);
     }
 
-    private HTTPFS(int port, InetAddress addr) throws IOException, UnknownHostException {
+    private HTTPFS(int port, @Nullable InetAddress addr) throws IOException, UnknownHostException {
         if (addr == null) { // On windows, this prevents firewall warnings. It's also good for security in general
             addr = InetAddress.getByName(null); // cannot use java7 InetAddress.getLoopbackAddress().
         }
@@ -56,19 +59,19 @@ public class HTTPFS extends VFSStub implements Runnable {
     }
 
     public static void main(String... args) throws IOException, UnknownHostException {
-        HTTPFS httpfs = new HTTPFS(8000);
+        @NotNull HTTPFS httpfs = new HTTPFS(8000);
         httpfs.add(new MockFile("test.txt", "It works!"));
         httpfs.add(new MockFile("world.txt", "Hello world"));
         httpfs.run();
     }
 
-    private static String in(BufferedReader in) throws IOException {
+    private static String in(@NotNull BufferedReader in) throws IOException {
         String s = in.readLine();
         LOG.log(Level.FINE, "<<< {0}", s);
         return s;
     }
 
-    private static void out(PrintWriter out, String cmd) {
+    private static void out(@NotNull PrintWriter out, String cmd) {
         out.print(cmd + "\r\n");
         out.flush();
         LOG.log(Level.FINE, ">>> {0}", cmd);
@@ -97,10 +100,10 @@ public class HTTPFS extends VFSStub implements Runnable {
         @Override
         public void run() {
             try {
-                BufferedInputStream is = new BufferedInputStream(client.getInputStream());
-                BufferedOutputStream os = new BufferedOutputStream(client.getOutputStream());
-                BufferedReader br = new BufferedReader(new InputStreamReader(is));
-                PrintWriter pw = new PrintWriter(os, true);
+                @NotNull BufferedInputStream is = new BufferedInputStream(client.getInputStream());
+                @NotNull BufferedOutputStream os = new BufferedOutputStream(client.getOutputStream());
+                @NotNull BufferedReader br = new BufferedReader(new InputStreamReader(is));
+                @NotNull PrintWriter pw = new PrintWriter(os, true);
                 while (!client.isClosed()) {
                     try {
                         String cmd = in(br);
@@ -108,20 +111,20 @@ public class HTTPFS extends VFSStub implements Runnable {
                             client.close();
                             break;
                         } else if (cmd.startsWith("GET")) {
-                            String[] args = cmd.substring(4).split(" ");
+                            @NotNull String[] args = cmd.substring(4).split(" ");
                             String req = args[0];
                             String http = args[1];
                             if (req.equals(SEPARATOR)) {
                                 req = "/index.html";
                             }
-                            SimpleVFile file = query(req);
+                            @Nullable SimpleVFile file = query(req);
                             LOG.log(Level.FINE, "*** GETing {0}", req);
                             if (file != null) {
                                 InputStream stream = file.openStream();
                                 if (stream != null) {
                                     out(pw, http + " 200 OK");
                                     out(pw, "");
-                                    byte[] buf = new byte[1024 * 8];
+                                    @NotNull byte[] buf = new byte[1024 * 8];
                                     int read;
                                     while ((read = stream.read(buf)) > -1) {
                                         os.write(buf, 0, read);

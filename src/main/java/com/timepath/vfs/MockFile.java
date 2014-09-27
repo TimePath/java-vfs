@@ -1,5 +1,7 @@
 package com.timepath.vfs;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.logging.Logger;
@@ -23,6 +25,7 @@ public class MockFile extends SimpleVFile {
         return name;
     }
 
+    @NotNull
     @Override
     public InputStream openStream() {
         return new ByteArrayInputStream(cont.getBytes());

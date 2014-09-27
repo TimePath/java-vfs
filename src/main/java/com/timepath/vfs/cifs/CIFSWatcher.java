@@ -1,6 +1,8 @@
 package com.timepath.vfs.cifs;
 
 import com.timepath.vfs.FileChangeListener;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,7 +33,7 @@ public class CIFSWatcher {
         try {
             // On windows, the loopback address does not prompt the firewall
             // Also good for security in general
-            final ServerSocket sock = new ServerSocket(port, 0, InetAddress.getLoopbackAddress());
+            @NotNull final ServerSocket sock = new ServerSocket(port, 0, InetAddress.getLoopbackAddress());
             port = sock.getLocalPort();
             LOG.log(Level.INFO, "Listening on port {0}", port);
             Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
@@ -64,9 +66,9 @@ public class CIFSWatcher {
                                     OutputStream os = client.getOutputStream();
                                     while (!client.isClosed()) {
                                         try {
-                                            byte[] buf = new byte[200];
+                                            @NotNull byte[] buf = new byte[200];
                                             while (is.read(buf) != -1) {
-                                                String text = new String(buf).trim();
+                                                @NotNull String text = new String(buf).trim();
                                                 LOG.info(Arrays.toString(text.getBytes()));
                                                 LOG.info(text);
                                             }
@@ -90,9 +92,10 @@ public class CIFSWatcher {
                                 Packet() {
                                 }
 
-                                private Packet read(InputStream is) throws IOException {
+                                @NotNull
+                                private Packet read(@NotNull InputStream is) throws IOException {
                                     ByteBuffer buf = ByteBuffer.allocate(42); // Average CIFS header size
-                                    byte[] head = new byte[24];
+                                    @NotNull byte[] head = new byte[24];
                                     is.read(head);
                                     LOG.info(Arrays.toString(head));
                                     LOG.info(new String(head));
@@ -111,7 +114,7 @@ public class CIFSWatcher {
                                     uid = buf.getShort(); // User ID
                                     mid = buf.getShort(); // Multiplex ID
                                     int wordCount = is.read();
-                                    byte[] words = new byte[wordCount * 2];
+                                    @NotNull byte[] words = new byte[wordCount * 2];
                                     is.read(words);
                                     ByteBuffer wordBuffer = ByteBuffer.wrap(words);
                                     parameterWords = new short[wordCount];
@@ -191,6 +194,7 @@ public class CIFSWatcher {
                                 private short uid;
                                 private short mid;
 
+                                @Nullable
                                 byte[] getBytes() {
                                     return null;
                                 }
@@ -204,7 +208,7 @@ public class CIFSWatcher {
         }
     }
 
-    public static void main(String... args) {
+    public static void main(@NotNull String... args) {
         int port = 8000;
         if (args.length >= 1) {
             port = Integer.parseInt(args[0]);

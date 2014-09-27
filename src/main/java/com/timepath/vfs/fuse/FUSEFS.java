@@ -10,6 +10,8 @@ import net.fusejna.StructFuseFileInfo.FileInfoWrapper;
 import net.fusejna.StructStat.StatWrapper;
 import net.fusejna.types.TypeMode.NodeType;
 import net.fusejna.util.FuseFilesystemAdapterFull;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
@@ -21,18 +23,19 @@ import java.util.logging.Logger;
 public class FUSEFS extends VFSStub implements Runnable {
 
     private static final Logger LOG = Logger.getLogger(FUSEFS.class.getName());
+    @NotNull
     private final FuseFilesystemAdapterFull fuse;
     private final String mountpoint;
 
-    private FUSEFS(File mountpoint) {
+    private FUSEFS(@NotNull File mountpoint) {
         this(mountpoint.getPath());
     }
 
     public FUSEFS(String mountpoint) {
         fuse = new FuseFilesystemAdapterFull() {
             @Override
-            public int getattr(String path, StatWrapper stat) {
-                VFile<?> file = query(path);
+            public int getattr(String path, @NotNull StatWrapper stat) {
+                @Nullable VFile<?> file = query(path);
                 if (file == null) {
                     return -ErrorCodes.ENOENT();
                 }
@@ -46,13 +49,13 @@ public class FUSEFS extends VFSStub implements Runnable {
             }
 
             @Override
-            public int read(String path, ByteBuffer buffer, long size, long offset, FileInfoWrapper info) {
-                VFile<?> file = query(path);
+            public int read(String path, @NotNull ByteBuffer buffer, long size, long offset, FileInfoWrapper info) {
+                @Nullable VFile<?> file = query(path);
                 if (file != null) {
                     InputStream stream = file.openStream();
                     try {
                         stream.skip(offset);
-                        byte[] buf = new byte[(int) Math.max(Math.min(size, stream.available()), 0)];
+                        @NotNull byte[] buf = new byte[(int) Math.max(Math.min(size, stream.available()), 0)];
                         stream.read(buf);
                         buffer.put(buf);
                         return buf.length;
@@ -64,12 +67,12 @@ public class FUSEFS extends VFSStub implements Runnable {
             }
 
             @Override
-            public int readdir(String path, DirectoryFiller filler) {
-                VFile<?> file = query(path);
+            public int readdir(String path, @NotNull DirectoryFiller filler) {
+                @Nullable VFile<?> file = query(path);
                 if (file == null) {
                     return -ErrorCodes.ENOENT();
                 }
-                for (VFile<?> vf : file.list()) {
+                for (@NotNull VFile<?> vf : file.list()) {
                     filler.add(path + SEPARATOR + vf.getName());
                 }
                 return 0;
@@ -79,7 +82,7 @@ public class FUSEFS extends VFSStub implements Runnable {
     }
 
     public static void main(String... args) {
-        FUSEFS fusefs = new FUSEFS("test");
+        @NotNull FUSEFS fusefs = new FUSEFS("test");
         fusefs.add(new MockFile("folder").add(new MockFile("test.txt", "It works!\n")));
         fusefs.add(new MockFile("test.txt", "It works!\n"));
         fusefs.add(new MockFile("world.txt", "Hello world\n"));
