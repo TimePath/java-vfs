@@ -1,5 +1,6 @@
 package com.timepath.vfs;
 
+import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -16,7 +17,7 @@ public class VFSStub extends SimpleVFile {
         this(null);
     }
 
-    protected VFSStub(@Nullable String name) {
+    protected VFSStub(@NonNls @Nullable String name) {
         if (name == null) {
             name = toString();
         }

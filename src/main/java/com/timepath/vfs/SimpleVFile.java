@@ -90,6 +90,8 @@ public abstract class SimpleVFile implements VFile<SimpleVFile>, MutableVFile<Si
     @Nullable
     @Override
     public SimpleVFile get(String name) {
+        if (".".equals(name)) return this;
+        if ("..".equals(name)) return getParent();
         SimpleVFile f = files.get(name);
         if (f != null) return f;
         for (@NotNull MissingFileHandler h : missingFileHandlers) {
