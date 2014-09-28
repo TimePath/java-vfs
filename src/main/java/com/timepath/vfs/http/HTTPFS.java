@@ -1,5 +1,6 @@
 package com.timepath.vfs.http;
 
+import com.timepath.util.concurrent.DaemonThreadFactory;
 import com.timepath.vfs.MockFile;
 import com.timepath.vfs.SimpleVFile;
 import com.timepath.vfs.VFSStub;
@@ -23,14 +24,7 @@ import java.util.logging.Logger;
 public class HTTPFS extends VFSStub implements Runnable {
 
     private static final Logger LOG = Logger.getLogger(HTTPFS.class.getName());
-    private final ExecutorService pool = Executors.newFixedThreadPool(10, new ThreadFactory() {
-        @Override
-        public Thread newThread(@NotNull Runnable r) {
-            Thread t = Executors.defaultThreadFactory().newThread(r);
-            t.setDaemon(false);
-            return t;
-        }
-    });
+    private final ExecutorService pool = Executors.newFixedThreadPool(10, new DaemonThreadFactory());
     @NotNull
     private final ServerSocket servsock;
 
@@ -38,7 +32,7 @@ public class HTTPFS extends VFSStub implements Runnable {
         this(8000);
     }
 
-    private HTTPFS(int port) throws IOException, UnknownHostException {
+    public HTTPFS(int port) throws IOException, UnknownHostException {
         this(port, null);
     }
 
@@ -56,13 +50,6 @@ public class HTTPFS extends VFSStub implements Runnable {
                 LOG.info("HTTP server shutting down...");
             }
         }));
-    }
-
-    public static void main(String... args) throws IOException, UnknownHostException {
-        @NotNull HTTPFS httpfs = new HTTPFS(8000);
-        httpfs.add(new MockFile("test.txt", "It works!"));
-        httpfs.add(new MockFile("world.txt", "Hello world"));
-        httpfs.run();
     }
 
     private static String in(@NotNull BufferedReader in) throws IOException {

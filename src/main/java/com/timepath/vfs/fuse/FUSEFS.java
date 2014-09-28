@@ -81,14 +81,6 @@ public class FUSEFS extends VFSStub implements Runnable {
         this.mountpoint = mountpoint;
     }
 
-    public static void main(String... args) {
-        @NotNull FUSEFS fusefs = new FUSEFS("test");
-        fusefs.add(new MockFile("folder").add(new MockFile("test.txt", "It works!\n")));
-        fusefs.add(new MockFile("test.txt", "It works!\n"));
-        fusefs.add(new MockFile("world.txt", "Hello world\n"));
-        fusefs.run();
-    }
-
     @Override
     public void run() {
         try {

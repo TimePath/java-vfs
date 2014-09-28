@@ -74,7 +74,7 @@ public class FTPFS extends VFSStub implements Runnable {
      * @param port *
      * @throws java.io.IOException
      */
-    private FTPFS(int port) throws IOException {
+    public FTPFS(int port) throws IOException {
         this(port, null); // cannot use java7 InetAddress.getLoopbackAddress(). On windows,
         // this prevents firewall warnings. It's also good for security in general
     }
@@ -86,7 +86,7 @@ public class FTPFS extends VFSStub implements Runnable {
      * @param addr If null, listen on all available interfaces
      * @throws java.io.IOException
      */
-    private FTPFS(int port, InetAddress addr) throws IOException {
+    public FTPFS(int port, InetAddress addr) throws IOException {
         this.port = port;
         address = addr;
         bind();
@@ -126,14 +126,6 @@ public class FTPFS extends VFSStub implements Runnable {
         sb.append(' ');
         sb.append(file.getName());
         return sb.toString();
-    }
-
-    public static void main(String... args) throws IOException {
-        @NotNull FTPFS f = new FTPFS(2121, null);
-        f.add(new MockFile("test.txt", "It works!"))
-                .add(new MockFile("world.txt", "Hello world"))
-                .add(new MockFile("folder").add(new MockFile("file", "test")));
-        f.run();
     }
 
     private static String in(@NotNull BufferedReader in) throws IOException {

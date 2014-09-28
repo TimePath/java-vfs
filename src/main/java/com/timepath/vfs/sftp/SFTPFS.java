@@ -53,13 +53,6 @@ public class SFTPFS extends VFSStub implements Runnable {
         this.port = port;
     }
 
-    public static void main(String[] args) {
-        SFTPFS root = new SFTPFS();
-        MockFile file = new MockFile("Hello", "world");
-        root.add(file);
-        root.run();
-    }
-
     @Nullable
     private static SshFile wrap(@Nullable SimpleVFile file) {
         return (file == null) ? null : new SshFileAdapter(file);
