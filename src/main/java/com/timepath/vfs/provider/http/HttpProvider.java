@@ -1,7 +1,6 @@
-package com.timepath.vfs.http;
+package com.timepath.vfs.provider.http;
 
 import com.timepath.util.concurrent.DaemonThreadFactory;
-import com.timepath.vfs.MockFile;
 import com.timepath.vfs.SimpleVFile;
 import com.timepath.vfs.VFSStub;
 import org.jetbrains.annotations.NotNull;
@@ -14,29 +13,28 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
  * @author TimePath
  */
-public class HTTPFS extends VFSStub implements Runnable {
+public class HttpProvider extends VFSStub implements Runnable {
 
-    private static final Logger LOG = Logger.getLogger(HTTPFS.class.getName());
+    private static final Logger LOG = Logger.getLogger(HttpProvider.class.getName());
     private final ExecutorService pool = Executors.newFixedThreadPool(10, new DaemonThreadFactory());
     @NotNull
     private final ServerSocket servsock;
 
-    public HTTPFS() throws IOException, UnknownHostException {
+    public HttpProvider() throws IOException, UnknownHostException {
         this(8000);
     }
 
-    public HTTPFS(int port) throws IOException, UnknownHostException {
+    public HttpProvider(int port) throws IOException, UnknownHostException {
         this(port, null);
     }
 
-    private HTTPFS(int port, @Nullable InetAddress addr) throws IOException, UnknownHostException {
+    private HttpProvider(int port, @Nullable InetAddress addr) throws IOException, UnknownHostException {
         if (addr == null) { // On windows, this prevents firewall warnings. It's also good for security in general
             addr = InetAddress.getByName(null); // cannot use java7 InetAddress.getLoopbackAddress().
         }

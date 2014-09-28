@@ -1,4 +1,4 @@
-package com.timepath.vfs.jdbc;
+package com.timepath.vfs.consumer.jdbc;
 
 import com.timepath.vfs.MockFile;
 import com.timepath.vfs.SimpleVFile;

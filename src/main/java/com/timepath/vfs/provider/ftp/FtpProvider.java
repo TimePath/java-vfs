@@ -1,4 +1,4 @@
-package com.timepath.vfs.ftp;
+package com.timepath.vfs.provider.ftp;
 
 import com.timepath.vfs.MockFile;
 import com.timepath.vfs.SimpleVFile;
@@ -42,9 +42,9 @@ import java.util.regex.Pattern;
  *
  * @author TimePath
  */
-public class FTPFS extends VFSStub implements Runnable {
+public class FtpProvider extends VFSStub implements Runnable {
 
-    private static final Logger LOG = Logger.getLogger(FTPFS.class.getName());
+    private static final Logger LOG = Logger.getLogger(FtpProvider.class.getName());
     private static final DateFormat mdtm = new SimpleDateFormat("yyyyMMddhhmmss");
     private final ExecutorService pool = Executors.newFixedThreadPool(10, new ThreadFactory() {
         @Override
@@ -64,7 +64,7 @@ public class FTPFS extends VFSStub implements Runnable {
     private InetAddress address;
     private ServerSocket servsock;
 
-    public FTPFS() throws IOException {
+    public FtpProvider() throws IOException {
         this(2121);
     }
 
@@ -74,7 +74,7 @@ public class FTPFS extends VFSStub implements Runnable {
      * @param port *
      * @throws java.io.IOException
      */
-    public FTPFS(int port) throws IOException {
+    public FtpProvider(int port) throws IOException {
         this(port, null); // cannot use java7 InetAddress.getLoopbackAddress(). On windows,
         // this prevents firewall warnings. It's also good for security in general
     }
@@ -86,7 +86,7 @@ public class FTPFS extends VFSStub implements Runnable {
      * @param addr If null, listen on all available interfaces
      * @throws java.io.IOException
      */
-    public FTPFS(int port, InetAddress addr) throws IOException {
+    public FtpProvider(int port, InetAddress addr) throws IOException {
         this.port = port;
         address = addr;
         bind();
@@ -449,7 +449,7 @@ public class FTPFS extends VFSStub implements Runnable {
                 client.close();
                 LOG.log(Level.FINE, "{0} closed.", client);
             } catch (IOException ex) {
-                Logger.getLogger(FTPFS.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(FtpProvider.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
 

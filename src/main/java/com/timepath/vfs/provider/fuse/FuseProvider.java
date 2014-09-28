@@ -1,6 +1,5 @@
-package com.timepath.vfs.fuse;
+package com.timepath.vfs.provider.fuse;
 
-import com.timepath.vfs.MockFile;
 import com.timepath.vfs.VFSStub;
 import com.timepath.vfs.VFile;
 import net.fusejna.DirectoryFiller;
@@ -20,18 +19,18 @@ import java.nio.ByteBuffer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class FUSEFS extends VFSStub implements Runnable {
+public class FuseProvider extends VFSStub implements Runnable {
 
-    private static final Logger LOG = Logger.getLogger(FUSEFS.class.getName());
+    private static final Logger LOG = Logger.getLogger(FuseProvider.class.getName());
     @NotNull
     private final FuseFilesystemAdapterFull fuse;
     private final String mountpoint;
 
-    private FUSEFS(@NotNull File mountpoint) {
+    private FuseProvider(@NotNull File mountpoint) {
         this(mountpoint.getPath());
     }
 
-    public FUSEFS(String mountpoint) {
+    public FuseProvider(String mountpoint) {
         fuse = new FuseFilesystemAdapterFull() {
             @Override
             public int getattr(String path, @NotNull StatWrapper stat) {

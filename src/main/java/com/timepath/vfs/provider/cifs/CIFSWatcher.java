@@ -1,4 +1,4 @@
-package com.timepath.vfs.cifs;
+package com.timepath.vfs.provider.cifs;
 
 import com.timepath.vfs.FileChangeListener;
 import org.jetbrains.annotations.NotNull;

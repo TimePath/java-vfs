@@ -1,5 +1,9 @@
-package com.timepath.vfs;
+package com.timepath.vfs.consumer.zip;
 
+import com.timepath.vfs.MockFile;
+import com.timepath.vfs.SimpleVFile;
+import com.timepath.vfs.VFSStub;
+import com.timepath.vfs.VFile;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
