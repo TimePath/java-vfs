@@ -1,4 +1,4 @@
-package com.timepath.vfs.consumer.zip;
+package com.timepath.vfs.provider.zip;
 
 import com.timepath.vfs.MockFile;
 import com.timepath.vfs.SimpleVFile;
@@ -14,12 +14,12 @@ import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-public class ZipFS extends VFSStub {
+public class ZipFileProvider extends VFSStub {
 
-    private static final Logger LOG = Logger.getLogger(ZipFS.class.getName());
+    private static final Logger LOG = Logger.getLogger(ZipFileProvider.class.getName());
     private static final Pattern DIRECTORYSPLIT = Pattern.compile(VFile.SEPARATOR);
 
-    public ZipFS(@NotNull byte[] data) throws IOException {
+    public ZipFileProvider(@NotNull byte[] data) throws IOException {
         @NotNull BufferedInputStream bis = new BufferedInputStream(new ByteArrayInputStream(data));
         bis.mark(data.length);
         @NotNull ZipInputStream zs = new ZipInputStream(bis);
@@ -42,41 +42,8 @@ public class ZipFS extends VFSStub {
                 }
                 dir = sub;
             }
-            dir.add(new ZipFSEntry(e, baos.toByteArray()));
+            dir.add(new ZipFile(e, baos.toByteArray()));
         }
     }
 
-    private static class ZipFSEntry extends SimpleVFile {
-
-        private final byte[] data;
-        private final ZipEntry entry;
-
-        ZipFSEntry(ZipEntry e, byte... data) {
-            entry = e;
-            this.data = data;
-        }
-
-        @NotNull
-        @Override
-        public String getName() {
-            String name = entry.getName();
-            return name.substring(name.lastIndexOf('/') + 1);
-        }
-
-        @NotNull
-        @Override
-        public InputStream openStream() {
-            return new ByteArrayInputStream(data);
-        }
-
-        @Override
-        public boolean isDirectory() {
-            return entry.isDirectory();
-        }
-
-        @Override
-        public long length() {
-            return entry.getSize();
-        }
-    }
 }

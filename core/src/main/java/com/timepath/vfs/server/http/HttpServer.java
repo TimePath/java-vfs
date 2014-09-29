@@ -1,4 +1,4 @@
-package com.timepath.vfs.provider.http;
+package com.timepath.vfs.server.http;
 
 import com.timepath.util.concurrent.DaemonThreadFactory;
 import com.timepath.vfs.SimpleVFile;
@@ -19,22 +19,22 @@ import java.util.logging.Logger;
 /**
  * @author TimePath
  */
-public class HttpProvider extends VFSStub implements Runnable {
+public class HttpServer extends VFSStub implements Runnable {
 
-    private static final Logger LOG = Logger.getLogger(HttpProvider.class.getName());
+    private static final Logger LOG = Logger.getLogger(HttpServer.class.getName());
     private final ExecutorService pool = Executors.newFixedThreadPool(10, new DaemonThreadFactory());
     @NotNull
     private final ServerSocket servsock;
 
-    public HttpProvider() throws IOException, UnknownHostException {
+    public HttpServer() throws IOException, UnknownHostException {
         this(8000);
     }
 
-    public HttpProvider(int port) throws IOException, UnknownHostException {
+    public HttpServer(int port) throws IOException, UnknownHostException {
         this(port, null);
     }
 
-    private HttpProvider(int port, @Nullable InetAddress addr) throws IOException, UnknownHostException {
+    private HttpServer(int port, @Nullable InetAddress addr) throws IOException, UnknownHostException {
         if (addr == null) { // On windows, this prevents firewall warnings. It's also good for security in general
             addr = InetAddress.getByName(null); // cannot use java7 InetAddress.getLoopbackAddress().
         }

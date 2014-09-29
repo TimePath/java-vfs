@@ -1,4 +1,4 @@
-package com.timepath.vfs.provider.cifs;
+package com.timepath.vfs.server.cifs;
 
 import com.timepath.vfs.FileChangeListener;
 import org.jetbrains.annotations.NotNull;
@@ -23,7 +23,7 @@ import java.util.logging.Logger;
  *
  * @author TimePath
  */
-public class CIFSWatcher {
+class CIFSWatcher {
 
     private static final Logger LOG = Logger.getLogger(CIFSWatcher.class.getName());
     private static CIFSWatcher instance;

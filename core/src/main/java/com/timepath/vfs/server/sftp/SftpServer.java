@@ -1,4 +1,4 @@
-package com.timepath.vfs.provider.sftp;
+package com.timepath.vfs.server.sftp;
 
 import com.timepath.util.Cache;
 import com.timepath.vfs.SimpleVFile;
@@ -29,25 +29,25 @@ import java.util.logging.Logger;
 /**
  * @author TimePath
  */
-public class SftpProvider extends VFSStub implements Runnable {
+public class SftpServer extends VFSStub implements Runnable {
 
-    private static final Logger LOG = Logger.getLogger(SftpProvider.class.getName());
+    private static final Logger LOG = Logger.getLogger(SftpServer.class.getName());
     private final int port;
     private SshServer sshd;
 
-    public SftpProvider() {
+    public SftpServer() {
         this(0);
     }
 
-    public SftpProvider(String name) {
+    public SftpServer(String name) {
         this(name, 0);
     }
 
-    public SftpProvider(int port) {
+    public SftpServer(int port) {
         this("sftp", port);
     }
 
-    public SftpProvider(String name, int port) {
+    public SftpServer(String name, int port) {
         super(name);
         this.port = port;
     }
@@ -69,7 +69,7 @@ public class SftpProvider extends VFSStub implements Runnable {
         FileSystemFactory fileSystemFactory = new FileSystemFactory() {
             @Override
             public FileSystemView createFileSystemView(Session session) throws IOException {
-                return new FileSystemViewAdapter(SftpProvider.this);
+                return new FileSystemViewAdapter(SftpServer.this);
             }
         };
         sshd.setFileSystemFactory(fileSystemFactory);

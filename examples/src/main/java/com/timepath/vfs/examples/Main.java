@@ -1,33 +1,34 @@
 package com.timepath.vfs.examples;
 
+import com.sun.nio.zipfs.JarFileSystemProvider;
 import com.timepath.vfs.MockFile;
-import com.timepath.vfs.MutableVFile;
 import com.timepath.vfs.SimpleVFile;
-import com.timepath.vfs.provider.ftp.FtpProvider;
-import com.timepath.vfs.provider.fuse.FuseProvider;
-import com.timepath.vfs.provider.http.HttpProvider;
-import com.timepath.vfs.provider.sftp.SftpProvider;
+import com.timepath.vfs.server.ftp.FtpServer;
+import com.timepath.vfs.server.fuse.FuseServer;
+import com.timepath.vfs.server.http.HttpServer;
+import com.timepath.vfs.server.sftp.SftpServer;
 
 import java.io.IOException;
 
 public class Main {
 
     public static void main(String[] args) throws IOException {
-        FtpProvider ftp = new FtpProvider(2121, null);
+        FtpServer ftp = new FtpServer(2121, null);
         addMocks(ftp);
         ftp.run();
 
-        FuseProvider fuse = new FuseProvider("test");
+        FuseServer fuse = new FuseServer("test");
         addMocks(fuse);
         fuse.run();
 
-        HttpProvider http = new HttpProvider(8000);
+        HttpServer http = new HttpServer(8000);
         addMocks(http);
         http.run();
 
-        SftpProvider sftp = new SftpProvider(1234);
+        SftpServer sftp = new SftpServer(1234);
         addMocks(sftp);
         sftp.run();
+        new JarFileSystemProvider();
     }
 
     private static void addMocks(SimpleVFile root) {
