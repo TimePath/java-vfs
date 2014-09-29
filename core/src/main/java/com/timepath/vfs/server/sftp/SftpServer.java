@@ -1,8 +1,8 @@
 package com.timepath.vfs.server.sftp;
 
 import com.timepath.util.Cache;
+import com.timepath.vfs.provider.ProviderStub;
 import com.timepath.vfs.SimpleVFile;
-import com.timepath.vfs.VFSStub;
 import org.apache.commons.io.output.NullOutputStream;
 import org.apache.sshd.SshServer;
 import org.apache.sshd.common.NamedFactory;
@@ -16,6 +16,8 @@ import org.apache.sshd.server.auth.UserAuthNone;
 import org.apache.sshd.server.command.ScpCommandFactory;
 import org.apache.sshd.server.keyprovider.SimpleGeneratorHostKeyProvider;
 import org.apache.sshd.sftp.subsystem.SftpSubsystem;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -29,7 +31,7 @@ import java.util.logging.Logger;
 /**
  * @author TimePath
  */
-public class SftpServer extends VFSStub implements Runnable {
+public class SftpServer extends ProviderStub implements Runnable {
 
     private static final Logger LOG = Logger.getLogger(SftpServer.class.getName());
     private final int port;
@@ -47,11 +49,12 @@ public class SftpServer extends VFSStub implements Runnable {
         this("sftp", port);
     }
 
-    public SftpServer(String name, int port) {
+    public SftpServer(@NonNls String name, int port) {
         super(name);
         this.port = port;
     }
 
+    @Contract("null -> null")
     @Nullable
     private static SshFile wrap(@Nullable SimpleVFile file) {
         return (file == null) ? null : new SshFileAdapter(file);
@@ -92,11 +95,13 @@ public class SftpServer extends VFSStub implements Runnable {
             this.root = root;
         }
 
+        @Nullable
         @Override
         public SshFile getFile(String file) {
             return wrap(root.get(file));
         }
 
+        @Nullable
         @Override
         public SshFile getFile(SshFile baseDir, String file) {
             return wrap(root.get(file));
@@ -188,6 +193,7 @@ public class SftpServer extends VFSStub implements Runnable {
             attributes.put(attribute, value);
         }
 
+        @Nullable
         @Override
         public String readSymbolicLink() throws IOException {
             return null;
@@ -238,6 +244,7 @@ public class SftpServer extends VFSStub implements Runnable {
             return false;
         }
 
+        @Nullable
         @Override
         public SshFile getParentFile() {
             return wrap(delegate.getParent());
@@ -286,8 +293,8 @@ public class SftpServer extends VFSStub implements Runnable {
         @Override
         public List<SshFile> listSshFiles() {
             Collection<? extends SimpleVFile> list = delegate.list();
-            List<SshFile> sshFiles = new LinkedList<SshFile>();
-            for (SimpleVFile simpleVFile : list) {
+            List<SshFile> sshFiles = new LinkedList<>();
+            for (@NotNull SimpleVFile simpleVFile : list) {
                 sshFiles.add(wrap(simpleVFile));
             }
             return sshFiles;
@@ -295,9 +302,10 @@ public class SftpServer extends VFSStub implements Runnable {
 
         @Override
         public OutputStream createOutputStream(long offset) throws IOException {
-            return new NullOutputStream();
+            return NullOutputStream.NULL_OUTPUT_STREAM;
         }
 
+        @Nullable
         @Override
         public InputStream createInputStream(long offset) throws IOException {
             return delegate.openStream();

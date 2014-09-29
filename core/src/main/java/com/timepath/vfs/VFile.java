@@ -1,10 +1,12 @@
 package com.timepath.vfs;
 
+import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.InputStream;
 import java.util.Collection;
+import java.util.regex.Pattern;
 
 /**
  * @param <V> Specific type of VFile
@@ -12,7 +14,10 @@ import java.util.Collection;
  */
 public interface VFile<V extends VFile<?>> {
 
+    @NonNls
     String SEPARATOR = "/";
+
+    Pattern SEPARATOR_PATTERN = Pattern.compile(SEPARATOR);
 
     boolean canExecute();
 
@@ -45,7 +50,7 @@ public interface VFile<V extends VFile<?>> {
      * @return the file, or null
      */
     @Nullable
-    V get(String name);
+    V get(@NonNls @NotNull String name);
 
     @Nullable
     String getPath();
@@ -78,6 +83,11 @@ public interface VFile<V extends VFile<?>> {
 
     boolean setWritable(boolean writable, boolean ownerOnly);
 
+    /**
+     * Open the file for reading. It is the caller's responsibility to close the stream
+     *
+     * @return the stream, or null
+     */
     @Nullable
     InputStream openStream();
 

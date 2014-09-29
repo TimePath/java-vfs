@@ -54,7 +54,8 @@ public abstract class SecurityController {
      * @param file The file
      * @return Potentially modified {@code file}
      */
-    public SimpleVFile get(SimpleVFile file) {
+    @Nullable
+    public SimpleVFile get(@Nullable SimpleVFile file) {
         return file;
     }
 }

@@ -1,8 +1,8 @@
 package com.timepath.vfs.server.http;
 
 import com.timepath.util.concurrent.DaemonThreadFactory;
+import com.timepath.vfs.provider.ProviderStub;
 import com.timepath.vfs.SimpleVFile;
-import com.timepath.vfs.VFSStub;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -19,7 +19,7 @@ import java.util.logging.Logger;
 /**
  * @author TimePath
  */
-public class HttpServer extends VFSStub implements Runnable {
+public class HttpServer extends ProviderStub implements Runnable {
 
     private static final Logger LOG = Logger.getLogger(HttpServer.class.getName());
     private final ExecutorService pool = Executors.newFixedThreadPool(10, new DaemonThreadFactory());

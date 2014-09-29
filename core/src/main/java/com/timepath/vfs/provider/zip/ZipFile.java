@@ -1,6 +1,7 @@
 package com.timepath.vfs.provider.zip;
 
 import com.timepath.vfs.SimpleVFile;
+import com.timepath.vfs.VFile;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.ByteArrayInputStream;
@@ -15,7 +16,7 @@ class ZipFile extends SimpleVFile {
     private final byte[] data;
     private final ZipEntry entry;
 
-    ZipFile(ZipEntry e, byte... data) {
+    ZipFile(ZipEntry e, byte[] data) {
         entry = e;
         this.data = data;
     }
@@ -24,7 +25,7 @@ class ZipFile extends SimpleVFile {
     @Override
     public String getName() {
         String name = entry.getName();
-        return name.substring(name.lastIndexOf('/') + 1);
+        return name.substring(name.lastIndexOf(VFile.SEPARATOR) + 1);
     }
 
     @NotNull

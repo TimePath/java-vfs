@@ -1,8 +1,8 @@
 package com.timepath.vfs.server.ftp;
 
 import com.timepath.vfs.MockFile;
+import com.timepath.vfs.provider.ProviderStub;
 import com.timepath.vfs.SimpleVFile;
-import com.timepath.vfs.VFSStub;
 import com.timepath.vfs.VFile;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -42,7 +42,7 @@ import java.util.regex.Pattern;
  *
  * @author TimePath
  */
-public class FtpServer extends VFSStub implements Runnable {
+public class FtpServer extends ProviderStub implements Runnable {
 
     private static final Logger LOG = Logger.getLogger(FtpServer.class.getName());
     private static final DateFormat mdtm = new SimpleDateFormat("yyyyMMddhhmmss");

@@ -5,6 +5,7 @@ import com.timepath.vfs.SimpleVFile;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import sun.java2d.pipe.SpanShapeRenderer;
 
 import javax.swing.Icon;
 import java.io.File;
@@ -39,7 +40,7 @@ public abstract class DelegateProvider extends SimpleVFile {
     protected List<SimpleVFile> wrap(@NotNull Iterable<? extends SimpleVFile> unwrapped) {
         // TODO: be smart about the original collection type rather than assume list
         List<SimpleVFile> wrapped = new LinkedList<>();
-        for (SimpleVFile v : unwrapped) {
+        for (@NotNull SimpleVFile v : unwrapped) {
             wrapped.add(wrap(v));
         }
         return wrapped;
@@ -77,7 +78,7 @@ public abstract class DelegateProvider extends SimpleVFile {
 
     @Nullable
     @Override
-    public SimpleVFile get(String name) {
+    public SimpleVFile get(@NotNull String name) {
         return wrap(data.get(name));
     }
 
@@ -95,7 +96,7 @@ public abstract class DelegateProvider extends SimpleVFile {
 
     @Nullable
     @Override
-    public SimpleVFile query(String path) {
+    public SimpleVFile query(@NotNull String path) {
         return wrap(data.query(path));
     }
 
@@ -228,18 +229,18 @@ public abstract class DelegateProvider extends SimpleVFile {
     }
 
     @Override
-    public void fileAdded(SimpleVFile f) {
-        data.fileAdded(f);
+    public void fileAdded(@NotNull SimpleVFile file) {
+        data.fileAdded(file);
     }
 
     @Override
-    public void fileModified(SimpleVFile f) {
-        data.fileModified(f);
+    public void fileModified(@NotNull SimpleVFile file) {
+        data.fileModified(file);
     }
 
     @Override
-    public void fileRemoved(SimpleVFile f) {
-        data.fileRemoved(f);
+    public void fileRemoved(@NotNull SimpleVFile file) {
+        data.fileRemoved(file);
     }
 
     @Nullable

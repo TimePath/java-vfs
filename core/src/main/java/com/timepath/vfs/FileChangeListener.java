@@ -1,13 +1,15 @@
 package com.timepath.vfs;
 
+import org.jetbrains.annotations.NotNull;
+
 /**
  * @author TimePath
  */
 public interface FileChangeListener {
 
-    void fileAdded(SimpleVFile f);
+    void fileAdded(@NotNull SimpleVFile file);
 
-    void fileModified(SimpleVFile f);
+    void fileModified(@NotNull SimpleVFile file);
 
-    void fileRemoved(SimpleVFile f);
+    void fileRemoved(@NotNull SimpleVFile file);
 }

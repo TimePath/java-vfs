@@ -1,26 +1,25 @@
-package com.timepath.vfs;
+package com.timepath.vfs.provider;
 
+import com.timepath.vfs.SimpleVFile;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.InputStream;
-import java.util.logging.Logger;
 
-public class VFSStub extends SimpleVFile {
+public class ProviderStub extends SimpleVFile {
 
-    private static final Logger LOG = Logger.getLogger(VFSStub.class.getName());
+    @NonNls
+    private static final String NOBODY = System.getProperty("user.name", "nobody");
     @NotNull
-    public String name;
+    protected String name;
 
-    protected VFSStub() {
+    protected ProviderStub() {
         this(null);
     }
 
-    protected VFSStub(@NonNls @Nullable String name) {
-        if (name == null) {
-            name = toString();
-        }
+    protected ProviderStub(@NonNls @Nullable String name) {
+        if (name == null) name = toString();
         this.name = name;
     }
 
@@ -59,6 +58,6 @@ public class VFSStub extends SimpleVFile {
 
     @Override
     public String owner() {
-        return System.getProperty("user.name", "nobody");
+        return NOBODY;
     }
 }

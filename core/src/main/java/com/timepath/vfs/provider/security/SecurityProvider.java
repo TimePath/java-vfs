@@ -2,6 +2,7 @@ package com.timepath.vfs.provider.security;
 
 import com.timepath.vfs.SimpleVFile;
 import com.timepath.vfs.provider.DelegateProvider;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -31,13 +32,15 @@ public class SecurityProvider extends DelegateProvider {
 
     @Nullable
     @Override
-    public SimpleVFile get(String name) {
+    public SimpleVFile get(@NotNull String name) {
         return wrap(security.get(data.get(name)));
     }
 
+    @SuppressWarnings({"ConstantConditions", "ReturnOfNull"})
+    @Contract("null -> null")
     @Override
     protected DelegateProvider wrap(@Nullable SimpleVFile file) {
-        return new SecurityProvider(file, security);
+        return (file == null) ? null : new SecurityProvider(file, security);
     }
 
     @NotNull

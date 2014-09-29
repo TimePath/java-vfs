@@ -1,23 +1,26 @@
 package com.timepath.vfs;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.util.logging.Logger;
+import java.nio.charset.StandardCharsets;
 
 public class MockFile extends SimpleVFile {
 
-    private static final Logger LOG = Logger.getLogger(MockFile.class.getName());
-    private final String cont, name;
+    @NotNull
+    private final String name;
+    @Nullable
+    private final byte[] bytes;
 
-    public MockFile(String name) {
+    public MockFile(@NotNull String name) {
         this(name, null);
     }
 
-    public MockFile(String name, String cont) {
+    public MockFile(@NotNull String name, @Nullable String cont) {
         this.name = name;
-        this.cont = cont;
+        this.bytes = cont != null ? cont.getBytes(StandardCharsets.UTF_8) : null;
     }
 
     @NotNull
@@ -26,14 +29,15 @@ public class MockFile extends SimpleVFile {
         return name;
     }
 
-    @NotNull
+    @SuppressWarnings("resource")
+    @Nullable
     @Override
     public InputStream openStream() {
-        return new ByteArrayInputStream(cont.getBytes());
+        return (bytes != null) ? new ByteArrayInputStream(bytes) : null;
     }
 
     @Override
     public boolean isDirectory() {
-        return cont == null;
+        return bytes == null;
     }
 }

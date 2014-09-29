@@ -1,6 +1,6 @@
 package com.timepath.vfs.server.fuse;
 
-import com.timepath.vfs.VFSStub;
+import com.timepath.vfs.provider.ProviderStub;
 import com.timepath.vfs.VFile;
 import net.fusejna.DirectoryFiller;
 import net.fusejna.ErrorCodes;
@@ -19,7 +19,7 @@ import java.nio.ByteBuffer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class FuseServer extends VFSStub implements Runnable {
+public class FuseServer extends ProviderStub implements Runnable {
 
     private static final Logger LOG = Logger.getLogger(FuseServer.class.getName());
     @NotNull

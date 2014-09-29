@@ -6,7 +6,7 @@ import org.jetbrains.annotations.NotNull;
  * @param <V> Specific type of VFile
  * @author TimePath
  */
-public interface MutableVFile<V extends VFile<?>> {
+public interface MutableVFile<V extends VFile<?>> extends VFile<V> {
 
     @NotNull
     V add(@NotNull V file);
