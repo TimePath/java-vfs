@@ -1,9 +1,12 @@
-package com.timepath.vfs;
+package com.timepath.vfs.provider;
 
+import com.timepath.vfs.FileChangeListener;
+import com.timepath.vfs.SimpleVFile;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import javax.swing.*;
+import javax.swing.Icon;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -12,19 +15,91 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * Decorates files to force all access through a {@link com.timepath.vfs.SecurityController}
+ * Decorates files. Implementers must override {@link #wrap(com.timepath.vfs.SimpleVFile)} to return their subclass
  *
  * @author TimePath
  */
-public class SecurityAdapter extends SimpleVFile {
+public abstract class DelegateProvider extends SimpleVFile {
 
-    private final SimpleVFile data;
-    private final SecurityController security;
+    @NotNull
+    protected final SimpleVFile data;
 
-    public SecurityAdapter(SimpleVFile data, SecurityController policy) {
+    protected DelegateProvider(@NotNull SimpleVFile data) {
         this.data = data;
-        this.security = policy;
     }
+
+    @Contract("null -> null")
+    protected abstract SimpleVFile wrap(@Nullable SimpleVFile file);
+
+    /**
+     * @param unwrapped A collection of files to be decorated with the current security settings
+     * @return The original list, decorated
+     */
+    @NotNull
+    protected List<SimpleVFile> wrap(@NotNull Iterable<? extends SimpleVFile> unwrapped) {
+        // TODO: be smart about the original collection type rather than assume list
+        List<SimpleVFile> wrapped = new LinkedList<>();
+        for (SimpleVFile v : unwrapped) {
+            wrapped.add(wrap(v));
+        }
+        return wrapped;
+    }
+
+    /**
+     * This method intentionally does not delegate
+     * {@inheritDoc}
+     */
+    @Override
+    @SuppressWarnings("EmptyMethod")
+    public boolean setParent(SimpleVFile newParent) {
+        return super.setParent(newParent);
+    }
+
+    @NotNull
+    @Override
+    public SimpleVFile add(@NotNull SimpleVFile file) {
+        data.add(file);
+        return this;
+    }
+
+    @NotNull
+    @Override
+    public SimpleVFile addAll(@NotNull Iterable<? extends SimpleVFile> files) {
+        data.addAll(files);
+        return this;
+    }
+
+    @NotNull
+    @Override
+    public List<SimpleVFile> find(String search) {
+        return wrap(data.find(search));
+    }
+
+    @Nullable
+    @Override
+    public SimpleVFile get(String name) {
+        return wrap(data.get(name));
+    }
+
+    @Nullable
+    @Override
+    public SimpleVFile getParent() {
+        return wrap(data.getParent());
+    }
+
+    @NotNull
+    @Override
+    public Collection<? extends SimpleVFile> list() {
+        return wrap(data.list());
+    }
+
+    @Nullable
+    @Override
+    public SimpleVFile query(String path) {
+        return wrap(data.query(path));
+    }
+
+    // Begin trivial delegation
 
     @Override
     public void addFileChangeListener(FileChangeListener listener) {
@@ -61,40 +136,7 @@ public class SecurityAdapter extends SimpleVFile {
         return data.exists();
     }
 
-    @Nullable
-    @Override
-    public SimpleVFile getParent() {
-        return wrap(data.getParent());
-    }
-
     @NotNull
-    @Override
-    public Collection<? extends SimpleVFile> list() {
-        return wrap(security.list(data));
-    }
-
-    /**
-     * TODO: be smart about the original collection type rather than assume list
-     *
-     * @param unwrapped A collection of files to be decorated with the current security settings
-     * @return The original list, decorated
-     */
-    @NotNull
-    private List<SimpleVFile> wrap(@NotNull final Collection<? extends SimpleVFile> unwrapped) {
-        @NotNull List<SimpleVFile> wrapped = new LinkedList<>();
-        for (SimpleVFile v : unwrapped) {
-            wrapped.add(wrap(v));
-        }
-        return wrapped;
-    }
-
-    @Nullable
-    @Override
-    public SimpleVFile get(String name) {
-        return wrap(security.get(data.get(name)));
-    }
-
-    @Nullable
     @Override
     public String getPath() {
         return data.getPath();
@@ -170,40 +212,8 @@ public class SecurityAdapter extends SimpleVFile {
         return data.setWritable(writable, ownerOnly);
     }
 
-    /**
-     * This method intentionally does not delegate
-     * {@inheritDoc}
-     */
     @Override
-    @SuppressWarnings("EmptyMethod")
-    public boolean setParent(SimpleVFile newParent) {
-        return super.setParent(newParent);
-    }
-
-    @Nullable
-    @Override
-    public SimpleVFile query(String path) {
-        return wrap(data.query(path));
-    }
-
-    @NotNull
-    @Override
-    public SimpleVFile add(SimpleVFile file) {
-        security.add(data, file);
-        return this;
-    }
-
-    @NotNull
-    @Override
-    public SimpleVFile addAll(@NotNull Iterable<? extends SimpleVFile> c) {
-        for (SimpleVFile file : c) {
-            security.add(data, file);
-        }
-        return this;
-    }
-
-    @Override
-    public void remove(SimpleVFile file) {
+    public void remove(@NotNull SimpleVFile file) {
         data.remove(file);
     }
 
@@ -234,12 +244,6 @@ public class SecurityAdapter extends SimpleVFile {
 
     @Nullable
     @Override
-    public List<SimpleVFile> find(String search) {
-        return wrap(data.find(search));
-    }
-
-    @Nullable
-    @Override
     public Icon getIcon() {
         return data.getIcon();
     }
@@ -260,12 +264,6 @@ public class SecurityAdapter extends SimpleVFile {
         return data.toString();
     }
 
-    @Nullable
-    private SecurityAdapter wrap(@Nullable final SimpleVFile simpleVFile) {
-        if (simpleVFile == null) return null;
-        return new SecurityAdapter(simpleVFile, security);
-    }
-
     @NotNull
     @Override
     public String getName() {
@@ -274,6 +272,6 @@ public class SecurityAdapter extends SimpleVFile {
 
     @Override
     public InputStream openStream() {
-        return security.openStream(data);
+        return data.openStream();
     }
 }

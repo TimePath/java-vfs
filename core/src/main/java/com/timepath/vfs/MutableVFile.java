@@ -9,12 +9,12 @@ import org.jetbrains.annotations.NotNull;
 public interface MutableVFile<V extends VFile<?>> {
 
     @NotNull
-    V add(V file);
+    V add(@NotNull V file);
 
     @NotNull
-    V addAll(Iterable<? extends V> c);
+    V addAll(@NotNull Iterable<? extends V> files);
 
-    void remove(V file);
+    void remove(@NotNull V file);
 
-    void removeAll(Iterable<? extends V> files);
+    void removeAll(@NotNull Iterable<? extends V> files);
 }
