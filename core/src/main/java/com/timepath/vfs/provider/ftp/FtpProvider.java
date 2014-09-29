@@ -283,7 +283,7 @@ public class FtpProvider extends VFSStub implements Runnable {
                             LOG.log(Level.FINE, "Changing from: {0}", cwd);
                             String ch;
                             if (cmd.toUpperCase().startsWith("CDUP")) {
-                                ch = canonicalize(cwd + "/..");
+                                ch = canonicalize(cwd + "/src/main");
                             } else {
                                 String dir = canonicalize(cmd.substring(4));
                                 if (!dir.endsWith(VFile.SEPARATOR)) {
@@ -462,7 +462,7 @@ public class FtpProvider extends VFSStub implements Runnable {
             @NotNull List<String> pieces = new LinkedList<>();
             for (@NotNull String s : split) {
                 if (s.isEmpty()) {
-                } else if ("..".equals(s)) {
+                } else if ("src/main".equals(s)) {
                     if (pieces.size() > 2) {
                         pieces.remove(pieces.size() - 1);
                     }

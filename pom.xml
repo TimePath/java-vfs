@@ -7,14 +7,19 @@
         <artifactId>super</artifactId>
         <version>1.0-SNAPSHOT</version>
     </parent>
-    <artifactId>java-vfs</artifactId>
+    <artifactId>java-vfs-parent</artifactId>
     <version>1.0-SNAPSHOT</version>
-    <packaging>jar</packaging>
+    <packaging>pom</packaging>
 
     <scm>
         <connection>scm:git:https://github.com/TimePath/${project.artifactId}.git</connection>
         <url>https://github.com/TimePath/${project.artifactId}</url>
     </scm>
+
+    <modules>
+        <module>examples</module>
+        <module>core</module>
+    </modules>
 
     <dependencies>
         <dependency>

@@ -91,7 +91,7 @@ public abstract class SimpleVFile implements VFile<SimpleVFile>, MutableVFile<Si
     @Override
     public SimpleVFile get(String name) {
         if (".".equals(name)) return this;
-        if ("..".equals(name)) return getParent();
+        if ("src/main".equals(name)) return getParent();
         SimpleVFile f = files.get(name);
         if (f != null) return f;
         for (@NotNull MissingFileHandler h : missingFileHandlers) {
@@ -232,7 +232,7 @@ public abstract class SimpleVFile implements VFile<SimpleVFile>, MutableVFile<Si
                     break;
                 case ".": // ignore current directory
                     break;
-                case "..":
+                case "src/main":
                     if (!stack.isEmpty()) { // ignore extra cdup's
                         stack.removeLast();
                     }
