@@ -1,6 +1,8 @@
 package com.timepath.vfs;
 
 import com.timepath.io.utils.ViewableData;
+import com.timepath.util.concurrent.DaemonThreadFactory;
+import com.timepath.vfs.provider.ProviderPlugin;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -8,9 +10,10 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 
 /**
  * A simple {@link com.timepath.vfs.VFile} implementation using synchronized recursive {@link java.util.HashMap}s
@@ -19,6 +22,10 @@ import java.util.regex.Pattern;
  */
 public abstract class SimpleVFile implements MutableVFile<SimpleVFile>, ViewableData, FileChangeListener {
 
+    protected static final ExecutorService pool = Executors.newFixedThreadPool(
+            Runtime.getRuntime().availableProcessors() * 10,
+            new DaemonThreadFactory()
+    );
     private static final Logger LOG = Logger.getLogger(SimpleVFile.class.getName());
     @NonNls
     private static final String DEFAULT_GROUP = System.getProperty("user.name", "nobody");
@@ -33,6 +40,45 @@ public abstract class SimpleVFile implements MutableVFile<SimpleVFile>, Viewable
     private long lastModified;
     @Nullable
     private SimpleVFile parent;
+    @NotNull
+    protected static List<FileHandler> handlers = new LinkedList<>();
+
+    @SuppressWarnings("WhileLoopReplaceableByForEach")
+    private static void locate() {
+        Iterator<ProviderPlugin> it = ServiceLoader.load(ProviderPlugin.class).iterator();
+        while (it.hasNext()) {
+            try {
+                handlers.add(it.next().register());
+            } catch(ServiceConfigurationError e) {
+                LOG.log(Level.WARNING, "Unable to load Plugin", e);
+            }
+        }
+    }
+
+    public void visit(@NotNull File dir, @NotNull FileVisitor v) {
+        @Nullable File[] ls = dir.listFiles();
+        if (ls == null) {
+            return;
+        }
+        for (File f : ls) {
+            v.visit(f, this);
+        }
+    }
+
+    public static interface FileHandler {
+
+        @Nullable
+        Collection<? extends SimpleVFile> handle(File file) throws IOException;
+    }
+
+    public interface FileVisitor {
+
+        void visit(File f, SimpleVFile parent);
+    }
+
+    static {
+        locate();
+    }
 
     protected SimpleVFile() {
         files = Collections.synchronizedMap(new HashMap<String, SimpleVFile>(0));
