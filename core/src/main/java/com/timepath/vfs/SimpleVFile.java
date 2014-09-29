@@ -33,6 +33,8 @@ public abstract class SimpleVFile implements MutableVFile<SimpleVFile>, Viewable
     private static final String DEFAULT_OWNER = System.getProperty("user.name", "nobody");
     @NotNull
     protected static List<MissingFileHandler> missingFileHandlers = new LinkedList<>();
+    @NotNull
+    protected static List<FileHandler> handlers = new LinkedList<>();
     protected final Map<String, SimpleVFile> files;
     @NotNull
     private final Collection<FileChangeListener> listeners;
@@ -40,8 +42,13 @@ public abstract class SimpleVFile implements MutableVFile<SimpleVFile>, Viewable
     private long lastModified;
     @Nullable
     private SimpleVFile parent;
-    @NotNull
-    protected static List<FileHandler> handlers = new LinkedList<>();
+
+    protected SimpleVFile() {
+        files = Collections.synchronizedMap(new HashMap<String, SimpleVFile>(0));
+        listeners = new LinkedList<>();
+        length = -1;
+        lastModified = System.currentTimeMillis();
+    }
 
     @SuppressWarnings("WhileLoopReplaceableByForEach")
     private static void locate() {
@@ -49,10 +56,14 @@ public abstract class SimpleVFile implements MutableVFile<SimpleVFile>, Viewable
         while (it.hasNext()) {
             try {
                 handlers.add(it.next().register());
-            } catch(ServiceConfigurationError e) {
+            } catch (ServiceConfigurationError e) {
                 LOG.log(Level.WARNING, "Unable to load Plugin", e);
             }
         }
+    }
+
+    public static void registerMissingFileHandler(MissingFileHandler h) {
+        missingFileHandlers.add(h);
     }
 
     public void visit(@NotNull File dir, @NotNull FileVisitor v) {
@@ -63,32 +74,6 @@ public abstract class SimpleVFile implements MutableVFile<SimpleVFile>, Viewable
         for (File f : ls) {
             v.visit(f, this);
         }
-    }
-
-    public static interface FileHandler {
-
-        @Nullable
-        Collection<? extends SimpleVFile> handle(File file) throws IOException;
-    }
-
-    public interface FileVisitor {
-
-        void visit(File f, SimpleVFile parent);
-    }
-
-    static {
-        locate();
-    }
-
-    protected SimpleVFile() {
-        files = Collections.synchronizedMap(new HashMap<String, SimpleVFile>(0));
-        listeners = new LinkedList<>();
-        length = -1;
-        lastModified = System.currentTimeMillis();
-    }
-
-    public static void registerMissingFileHandler(MissingFileHandler h) {
-        missingFileHandlers.add(h);
     }
 
     public void addFileChangeListener(FileChangeListener listener) {
@@ -447,6 +432,21 @@ public abstract class SimpleVFile implements MutableVFile<SimpleVFile>, Viewable
     @Override
     public String toString() {
         return getName();
+    }
+
+    public static interface FileHandler {
+
+        @Nullable
+        Collection<? extends SimpleVFile> handle(File file) throws IOException;
+    }
+
+    public interface FileVisitor {
+
+        void visit(File file, SimpleVFile parent);
+    }
+
+    static {
+        locate();
     }
 
     public static interface MissingFileHandler {
