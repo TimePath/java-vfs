@@ -1,6 +1,5 @@
 package com.timepath.vfs.examples;
 
-import com.sun.nio.zipfs.JarFileSystemProvider;
 import com.timepath.vfs.MockFile;
 import com.timepath.vfs.SimpleVFile;
 import com.timepath.vfs.server.ftp.FtpServer;
@@ -28,7 +27,6 @@ public class Main {
         SftpServer sftp = new SftpServer(1234);
         addMocks(sftp);
         sftp.run();
-        new JarFileSystemProvider();
     }
 
     private static void addMocks(SimpleVFile root) {
