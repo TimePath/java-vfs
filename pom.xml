@@ -39,5 +39,10 @@
             <artifactId>sshd-sftp</artifactId>
             <version>0.11.0</version>
         </dependency>
+
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+        </dependency>
     </dependencies>
 </project>
