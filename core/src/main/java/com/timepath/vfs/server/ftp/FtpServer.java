@@ -462,7 +462,7 @@ public class FtpServer extends ProviderStub implements Runnable {
             @NotNull List<String> pieces = new LinkedList<>();
             for (@NotNull String s : split) {
                 if (s.isEmpty()) {
-                } else if ("src/main".equals(s)) {
+                } else if ("..".equals(s)) {
                     if (pieces.size() > 2) {
                         pieces.remove(pieces.size() - 1);
                     }
