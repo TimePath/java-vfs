@@ -350,7 +350,8 @@ public abstract class SimpleVFile protected() : MutableVFile<SimpleVFile>, Viewa
         NonNls
         private val DEFAULT_OWNER = System.getProperty("user.name", "nobody")
         protected var missingFileHandlers: MutableList<MissingFileHandler> = LinkedList()
-        protected var handlers: MutableList<FileHandler> = LinkedList()
+        var handlers: MutableList<FileHandler> = LinkedList()
+            protected set
 
         SuppressWarnings("WhileLoopReplaceableByForEach")
         private fun locate() {
