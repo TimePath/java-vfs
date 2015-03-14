@@ -69,9 +69,7 @@ public abstract class SimpleVFile protected() : MutableVFile<SimpleVFile>, Viewa
         return true
     }
 
-    override fun list(): Collection<out SimpleVFile> {
-        return files.values()
-    }
+    override fun list(): Collection<SimpleVFile> = files.values()
 
     override fun get(NonNls name: String): SimpleVFile? {
         if ("." == name) return this
@@ -202,7 +200,7 @@ public abstract class SimpleVFile protected() : MutableVFile<SimpleVFile>, Viewa
         return this
     }
 
-    override fun addAll(files: Iterable<out SimpleVFile>): SimpleVFile {
+    override fun addAll(files: Iterable<SimpleVFile>): SimpleVFile {
         synchronized (this.files) {
             for (file in files) {
                 addImpl(file)
@@ -218,7 +216,7 @@ public abstract class SimpleVFile protected() : MutableVFile<SimpleVFile>, Viewa
         }
     }
 
-    override fun removeAll(files: Iterable<out SimpleVFile>) {
+    override fun removeAll(files: Iterable<SimpleVFile>) {
         synchronized (this.files) {
             for (file in files) {
                 removeImpl(file)
@@ -328,7 +326,7 @@ public abstract class SimpleVFile protected() : MutableVFile<SimpleVFile>, Viewa
     public trait FileHandler {
 
         throws(javaClass<IOException>())
-        public fun handle(file: File): Collection<out SimpleVFile>?
+        public fun handle(file: File): Collection<SimpleVFile>?
     }
 
     public trait FileVisitor {

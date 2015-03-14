@@ -191,7 +191,7 @@ class CIFSWatcher private(port: Int) {
                                     return null
                                 }
                             }
-                        })?.start()
+                        }).start()
                     }
                 }
             }, "CIFS Server").start()
