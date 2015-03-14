@@ -221,7 +221,7 @@ public class FtpServer
                             val executor = Executors.newCachedThreadPool()
                             val lines = arrayOfNulls<String>(files.size()).mapIndexed {(i, s) ->
                                 executor.submit(object : Callable<String> {
-                                    override fun call() = toFTPString(files.get(i))
+                                    override fun call() = toFTPString(files[i])
                                 })
                             }.forEach {
                                 out(out, it.get())
@@ -415,9 +415,9 @@ public class FtpServer
             sb.append(java.lang.String.format("%8s", fileSize)) // >= 8 left
             sb.append(' ')
             val cal = Calendar.getInstance()
-            val y1 = cal.get(Calendar.YEAR)
+            val y1 = cal[Calendar.YEAR]
             cal.setTimeInMillis(file.lastModified)
-            val y2 = cal.get(Calendar.YEAR)
+            val y2 = cal[Calendar.YEAR]
             val sameYear = "MMM d HH:mm"
             val diffYear = "MMM d yyyy"
             val df = SimpleDateFormat(if ((y1 == y2)) sameYear else diffYear)

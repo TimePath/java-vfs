@@ -15,7 +15,7 @@ public class SecurityProvider(data: SimpleVFile, private val security: SecurityC
 
     override fun list(): List<SimpleVFile> = wrap(security.list(data))
 
-    override fun get(name: String): SimpleVFile? = wrap(security.get(data.get(name)))
+    override fun get(name: String): SimpleVFile? = wrap(security[data[name]])
 
     override fun wrap(file: SimpleVFile?): DelegateProvider? = when (file) {
         null -> null

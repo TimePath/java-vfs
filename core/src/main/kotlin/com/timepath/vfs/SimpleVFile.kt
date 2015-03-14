@@ -74,7 +74,7 @@ public abstract class SimpleVFile protected() : MutableVFile<SimpleVFile>, Viewa
     override fun get(NonNls name: String): SimpleVFile? {
         if ("." == name) return this
         if (".." == name) return parent
-        val file = files.get(name)
+        val file = files[name]
         if (file != null) return file
         for (h in missingFileHandlers) {
             val root = h.handle(this, name)
@@ -186,7 +186,7 @@ public abstract class SimpleVFile protected() : MutableVFile<SimpleVFile>, Viewa
         LOG.log(Level.FINE, "Getting {0}", stack)
         var result: SimpleVFile? = this
         for (token in stack) {
-            result = result!!.get(token)
+            result = result!![token]
             if (result == null) break
         }
         return result

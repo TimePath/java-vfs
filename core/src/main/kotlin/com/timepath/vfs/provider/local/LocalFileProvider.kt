@@ -83,7 +83,7 @@ public open class LocalFileProvider(file: File) : LocalFile(file) {
          * @param parent
          */
         synchronized private fun merge(src: SimpleVFile, parent: SimpleVFile) {
-            val existing = parent.get(src.name)
+            val existing = parent[src.name]
             if (existing == null) {
                 // Parent does not have this file, simple case
                 parent.add(src)

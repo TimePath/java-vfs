@@ -67,9 +67,9 @@ public class SftpServer(NonNls name: String, private val port: Int = 0) : Provid
 
     class FileSystemViewAdapter(private val root: SimpleVFile) : FileSystemView {
 
-        override fun getFile(file: String) = wrap(root.get(file))
+        override fun getFile(file: String) = wrap(root[file])
 
-        override fun getFile(baseDir: SshFile, file: String) = wrap(root.get(file))
+        override fun getFile(baseDir: SshFile, file: String) = wrap(root[file])
 
         override fun getNormalizedView() = this
     }
@@ -115,7 +115,7 @@ public class SftpServer(NonNls name: String, private val port: Int = 0) : Provid
 
         throws(javaClass<IOException>())
         override fun getAttribute(attribute: SshFile.Attribute, followLinks: Boolean): Any {
-            return attributes.get(attribute)
+            return attributes[attribute]
         }
 
         throws(javaClass<IOException>())

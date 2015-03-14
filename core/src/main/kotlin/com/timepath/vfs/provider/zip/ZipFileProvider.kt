@@ -48,7 +48,7 @@ public class ZipFileProvider [throws(javaClass<IOException>())](data: ByteArray)
         var dir: SimpleVFile = this
         for (i in 0..(split.size() - 1) - 1) {
             val dirName = split[i]
-            var sub = dir.get(dirName)
+            var sub = dir[dirName]
             // Create transient directories
             if (sub == null) {
                 sub = MockFile(dirName)

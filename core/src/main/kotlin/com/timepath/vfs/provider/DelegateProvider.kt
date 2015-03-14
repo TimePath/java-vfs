@@ -44,7 +44,7 @@ public abstract class DelegateProvider protected(protected val data: SimpleVFile
 
     override fun find(search: String) = wrap(data.find(search))
 
-    override fun get(name: String) = wrap(data.get(name))
+    override fun get(name: String) = wrap(data[name])
 
     override var parent: SimpleVFile?
         get() = wrap(data.parent)
