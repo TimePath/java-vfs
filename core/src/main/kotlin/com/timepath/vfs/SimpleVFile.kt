@@ -167,7 +167,7 @@ public abstract class SimpleVFile protected() : MutableVFile<SimpleVFile>, Viewa
      * @return the file, or null
      */
     public open fun query(path: String): SimpleVFile? {
-        val split = VFile.SEPARATOR.split(path)
+        val split = path.split(VFile.SEPARATOR)
         if (split.size() == 1) return get(path) // Fast path
         // Compute absolute canonical path
         val stack = LinkedList<String>()
