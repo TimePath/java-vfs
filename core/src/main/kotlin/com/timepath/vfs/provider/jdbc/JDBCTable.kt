@@ -5,8 +5,6 @@ import com.timepath.vfs.SimpleVFile
 import com.timepath.vfs.provider.ProviderStub
 import org.jetbrains.annotations.NonNls
 
-import java.sql.PreparedStatement
-import java.sql.ResultSet
 import java.sql.SQLException
 import java.text.MessageFormat
 import java.util.LinkedList
@@ -28,7 +26,7 @@ class JDBCTable(private val jdbcProvider: JDBCProvider, name: String) : Provider
                     val len = rs.getMetaData().getColumnCount()
                     while (rs.next()) {
                         val sb = StringBuilder()
-                        for (i in 0..len - 1) {
+                        for (i in len.indices) {
                             sb.append('\t').append(rs.getString(i + 1))
                         }
                         rows.add(MockFile(rs.getString(1), sb.substring(1)))

@@ -46,7 +46,7 @@ public class ZipFileProvider [throws(javaClass<IOException>())](data: ByteArray)
     private fun atPath(path: CharSequence): SimpleVFile {
         val split = VFile.SEPARATOR_PATTERN.split(path)
         var dir: SimpleVFile = this
-        for (i in 0..(split.size() - 1) - 1) {
+        for (i in (split.size() - 1).indices) {
             val dirName = split[i]
             var sub = dir[dirName]
             // Create transient directories
