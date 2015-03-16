@@ -3,7 +3,6 @@ package com.timepath.vfs.server.sftp
 import com.timepath.util.Cache
 import com.timepath.vfs.provider.ProviderStub
 import com.timepath.vfs.SimpleVFile
-import org.apache.commons.io.output.NullOutputStream
 import org.apache.sshd.SshServer
 import org.apache.sshd.common.NamedFactory
 import org.apache.sshd.common.Session
@@ -182,14 +181,13 @@ public class SftpServer(NonNls name: String, private val port: Int = 0) : Provid
         }
 
         throws(javaClass<IOException>())
-        override fun createOutputStream(offset: Long) = NullOutputStream.NULL_OUTPUT_STREAM
+        override fun createOutputStream(offset: Long) = null
 
         throws(javaClass<IOException>())
         override fun createInputStream(offset: Long) = delegate.openStream()
 
         throws(javaClass<IOException>())
-        override fun handleClose() {
-        }
+        override fun handleClose() = Unit
     }
 
     class object {
