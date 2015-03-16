@@ -36,19 +36,17 @@ public abstract class ExtendedVFile protected() : SimpleVFile() {
         return (-1).toLong()
     }
 
-    public fun getAbsoluteName(): String {
-        return path + name
-    }
+    public val absoluteName: String
+        get() = path + name
 
-    public abstract fun getAttributes(): Any?
+    public abstract val attributes: Any?
 
-    public open fun getChecksum(): Long {
-        return (-1).toLong()
-    }
+    public open val checksum: Long
+        get() = -1L
 
-    public abstract fun getRoot(): ExtendedVFile
+    public abstract val root: ExtendedVFile
 
-    public abstract fun isComplete(): Boolean
+    public abstract val isComplete: Boolean
 
     class object {
 

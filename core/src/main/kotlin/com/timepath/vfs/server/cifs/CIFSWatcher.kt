@@ -187,9 +187,7 @@ class CIFSWatcher private(port: Int) {
                                 private var uid: Short = 0
                                 private var mid: Short = 0
 
-                                fun getBytes(): ByteArray? {
-                                    return null
-                                }
+                                val bytes: ByteArray? = null
                             }
                         }).start()
                     }

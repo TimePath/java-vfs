@@ -11,17 +11,14 @@ import java.util.logging.Logger
  */
 open class LocalFile(protected val file: File) : ExtendedVFile() {
 
-    override fun getAttributes(): Any? {
-        return null
-    }
+    override val attributes: Any?
+        get() = null
 
-    override fun getRoot(): ExtendedVFile {
-        return this
-    }
+    override val root: ExtendedVFile
+        get() = this
 
-    override fun isComplete(): Boolean {
-        return true
-    }
+    override val isComplete: Boolean
+        get() = true
 
     override val name: String
         get() = file.name
