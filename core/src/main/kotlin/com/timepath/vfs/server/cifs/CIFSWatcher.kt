@@ -4,7 +4,6 @@ import com.timepath.vfs.FileChangeListener
 
 import java.io.IOException
 import java.io.InputStream
-import java.io.OutputStream
 import java.net.InetAddress
 import java.net.ServerSocket
 import java.net.Socket
@@ -13,6 +12,7 @@ import java.util.Arrays
 import java.util.LinkedList
 import java.util.logging.Level
 import java.util.logging.Logger
+import kotlin.platform.platformStatic
 
 /**
  * http://www.codefx.com/CIFS_Explained.htm
@@ -23,19 +23,16 @@ import java.util.logging.Logger
 class CIFSWatcher private(port: Int) {
     private val listeners = LinkedList<FileChangeListener>()
 
-    ;{
-        var port = port
+            ;{
         try {
             // On windows, the loopback address does not prompt the firewall
             // Also good for security in general
             val sock = ServerSocket(port, 0, InetAddress.getLoopbackAddress())
-            port = sock.getLocalPort()
-            LOG.log(Level.INFO, "Listening on port {0}", port)
-            Runtime.getRuntime().addShutdownHook(Thread(object : Runnable {
-                override fun run() {
-                    LOG.info("CIFS server shutting down...")
-                }
-            }))
+            val realPort = sock.getLocalPort()
+            LOG.log(Level.INFO, "Listening on port {0}", realPort)
+            Runtime.getRuntime().addShutdownHook (Thread {
+                LOG.info("CIFS server shutting down...")
+            })
             Thread(object : Runnable {
                 private val data: Socket? = null
                 private val pasv: ServerSocket? = null
@@ -208,7 +205,7 @@ class CIFSWatcher private(port: Int) {
         private val LOG = Logger.getLogger(javaClass<CIFSWatcher>().getName())
         private var instance: CIFSWatcher? = null
 
-        public fun main(args: Array<String>) {
+        public platformStatic fun main(args: Array<String>) {
             var port = 8000
             if (args.size() >= 1) {
                 port = Integer.parseInt(args[0])
@@ -224,5 +221,3 @@ class CIFSWatcher private(port: Int) {
         }
     }
 }
-
-fun main(args: Array<String>) = CIFSWatcher.main(args)

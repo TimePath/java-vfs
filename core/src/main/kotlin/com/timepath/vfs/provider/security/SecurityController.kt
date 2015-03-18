@@ -10,7 +10,6 @@ import java.io.InputStream
  *
  * @author TimePath
  */
-SuppressWarnings("MethodMayBeStatic")
 public abstract class SecurityController {
 
     /**

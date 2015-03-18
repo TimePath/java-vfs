@@ -23,14 +23,11 @@ open class LocalFile(protected val file: File) : ExtendedVFile() {
     override val name: String
         get() = file.name
 
-    override fun openStream(): InputStream? {
-        try {
-            return BufferedInputStream(FileInputStream(file))
-        } catch (ex: FileNotFoundException) {
-            LOG.log(Level.SEVERE, null, ex)
-        }
-
-        return null
+    override fun openStream() = try {
+        BufferedInputStream(FileInputStream(file))
+    } catch (ex: FileNotFoundException) {
+        LOG.log(Level.SEVERE, null, ex)
+        null
     }
 
     override val isDirectory: Boolean
@@ -46,7 +43,6 @@ open class LocalFile(protected val file: File) : ExtendedVFile() {
         get() = file.length()
 
     class object {
-
         private val LOG = Logger.getLogger(javaClass<LocalFile>().getName())
     }
 

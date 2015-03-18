@@ -3,9 +3,7 @@ package com.timepath.vfs.provider.local
 import com.timepath.vfs.SimpleVFile
 
 import java.io.File
-import java.io.IOException
 import java.util.LinkedList
-import java.util.concurrent.Callable
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.Future
 import java.util.logging.Level
@@ -30,7 +28,7 @@ public open class LocalFileProvider(file: File) : LocalFile(file) {
      */
     private fun insert(toInsert: File) {
         val start = System.currentTimeMillis()
-        val tasks = LinkedList<Future<Void>>()
+        val tasks = LinkedList<Future<Unit>>()
         visit(toInsert, object : SimpleVFile.FileVisitor {
             override fun visit(file: File, parent: SimpleVFile) {
                 val entry = LocalFile(file)
@@ -40,33 +38,28 @@ public open class LocalFileProvider(file: File) : LocalFile(file) {
                     entry.visit(file, this)
                 } else {
                     // Start background identification
-                    tasks.add(SimpleVFile.pool.submit<Void>(object : Callable<Void> {
-                        throws(javaClass<IOException>())
-                        override fun call(): Void? {
-                            for (handler in SimpleVFile.handlers) {
-                                val root = handler.handle(file)
-                                if (root == null) continue
+                    tasks.add(SimpleVFile.pool.submit<Unit> {
+                        SimpleVFile.handlers.forEach {
+                            it.handle(file)?.let {
                                 // Defensive copy
-                                for (child in root.copyToArray()) {
-                                    merge(child, parent)
+                                it.copyToArray().forEach {
+                                    merge(it, parent)
                                 }
                             }
-                            return null
                         }
-                    }))
+                    })
                 }
             }
         })
         // Await all
-        for (fut in tasks) {
+        tasks.forEach {
             try {
-                fut.get()
+                it.get()
             } catch (e: InterruptedException) {
                 LOG.log(Level.SEVERE, null, e)
             } catch (e: ExecutionException) {
                 LOG.log(Level.SEVERE, null, e)
             }
-
         }
         LOG.log(Level.INFO, "Recursive file load took {0}ms", System.currentTimeMillis() - start)
     }

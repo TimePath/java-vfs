@@ -22,7 +22,6 @@ import java.io.IOException
 import java.util.*
 import java.util.logging.Level
 import java.util.logging.Logger
-import org.apache.sshd.common.file.SshFile.Permission
 
 /**
  * @author TimePath
@@ -78,21 +77,31 @@ public class SftpServer(NonNls name: String, private val port: Int = 0) : Provid
         private val attributes = object : Cache<SshFile.Attribute, Any>(EnumMap<SshFile.Attribute, Any>(javaClass<SshFile.Attribute>())) {
             SuppressWarnings("MethodWithMultipleReturnPoints", "OverlyComplexMethod")
             override fun fill(key: SshFile.Attribute): Any? {
-                when (key) {
-                    SshFile.Attribute.IsRegularFile -> return !isDirectory()
-                    SshFile.Attribute.Size -> return getSize()
-                    SshFile.Attribute.Uid -> return 1000
-                    SshFile.Attribute.Owner -> return getOwner()
-                    SshFile.Attribute.Gid -> return 1000
-                    SshFile.Attribute.Group -> return delegate.group
-                    SshFile.Attribute.IsDirectory -> return isDirectory()
-                    SshFile.Attribute.IsSymbolicLink -> return false
-                    SshFile.Attribute.Permissions -> return EnumSet.of<Permission>(SshFile.Permission.UserRead, SshFile.Permission.GroupRead, SshFile.Permission.OthersRead, SshFile.Permission.UserWrite, SshFile.Permission.GroupWrite, SshFile.Permission.OthersWrite, SshFile.Permission.UserExecute, SshFile.Permission.GroupExecute, SshFile.Permission.OthersExecute)
-                    SshFile.Attribute.CreationTime -> return delegate.lastModified
-                    SshFile.Attribute.LastModifiedTime -> return delegate.lastModified
-                    SshFile.Attribute.LastAccessTime -> return delegate.lastModified
+                return when (key) {
+                    SshFile.Attribute.IsRegularFile -> !isDirectory()
+                    SshFile.Attribute.Size -> getSize()
+                    SshFile.Attribute.Uid -> 1000
+                    SshFile.Attribute.Owner -> getOwner()
+                    SshFile.Attribute.Gid -> 1000
+                    SshFile.Attribute.Group -> delegate.group
+                    SshFile.Attribute.IsDirectory -> isDirectory()
+                    SshFile.Attribute.IsSymbolicLink -> false
+                    SshFile.Attribute.Permissions -> EnumSet.of(
+                            SshFile.Permission.UserRead,
+                            SshFile.Permission.GroupRead,
+                            SshFile.Permission.OthersRead,
+                            SshFile.Permission.UserWrite,
+                            SshFile.Permission.GroupWrite,
+                            SshFile.Permission.OthersWrite,
+                            SshFile.Permission.UserExecute,
+                            SshFile.Permission.GroupExecute,
+                            SshFile.Permission.OthersExecute
+                    )
+                    SshFile.Attribute.CreationTime -> delegate.lastModified
+                    SshFile.Attribute.LastModifiedTime -> delegate.lastModified
+                    SshFile.Attribute.LastAccessTime -> delegate.lastModified
+                    else -> null
                 }
-                return null
             }
         }
 
@@ -107,15 +116,13 @@ public class SftpServer(NonNls name: String, private val port: Int = 0) : Provid
 
         throws(javaClass<IOException>())
         override fun setAttributes(attributes: Map<SshFile.Attribute, Any>) {
-            for (entry in attributes.entrySet()) {
-                setAttribute(entry.getKey(), entry.getValue())
+            for ((k, v) in attributes.entrySet()) {
+                setAttribute(k, v)
             }
         }
 
         throws(javaClass<IOException>())
-        override fun getAttribute(attribute: SshFile.Attribute, followLinks: Boolean): Any {
-            return attributes[attribute]
-        }
+        override fun getAttribute(attribute: SshFile.Attribute, followLinks: Boolean) = attributes[attribute]
 
         throws(javaClass<IOException>())
         override fun setAttribute(attribute: SshFile.Attribute, value: Any) {
@@ -123,13 +130,10 @@ public class SftpServer(NonNls name: String, private val port: Int = 0) : Provid
         }
 
         throws(javaClass<IOException>())
-        override fun readSymbolicLink(): String? {
-            return null
-        }
+        override fun readSymbolicLink() = null
 
         throws(javaClass<IOException>())
-        override fun createSymbolicLink(destination: SshFile) {
-        }
+        override fun createSymbolicLink(destination: SshFile) = Unit
 
         override fun getOwner() = delegate.owner
 
@@ -166,8 +170,7 @@ public class SftpServer(NonNls name: String, private val port: Int = 0) : Provid
         override fun create() = false
 
         throws(javaClass<IOException>())
-        override fun truncate() {
-        }
+        override fun truncate() = Unit
 
         override fun move(destination: SshFile) = false
 

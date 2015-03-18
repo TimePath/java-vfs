@@ -86,6 +86,6 @@ public trait VFile<V : VFile<V>> {
         NonNls
         val SEPARATOR: String = "/"
 
-        val SEPARATOR_PATTERN: Pattern = Pattern.compile(SEPARATOR)
+        val SEPARATOR_PATTERN: Pattern = SEPARATOR.toRegex()
     }
 }

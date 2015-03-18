@@ -45,52 +45,48 @@ public abstract class SimpleVFile protected() : MutableVFile<SimpleVFile>, Viewa
         listeners.add(listener)
     }
 
-    override fun canExecute(): Boolean {
-        return false
-    }
+    override fun canExecute() = false
 
-    override fun canRead(): Boolean {
-        return true
-    }
+    override fun canRead() = true
 
-    override fun canWrite(): Boolean {
-        return false
-    }
+    override fun canWrite() = false
 
-    override fun createNewFile(): Boolean {
-        return false // TODO: lazy node traversal
-    }
+    // TODO: lazy node traversal
+    override fun createNewFile() = false
 
-    override fun delete(): Boolean {
-        return false
-    }
+    override fun delete() = false
 
-    override fun exists(): Boolean {
-        return true
-    }
+    override fun exists() = true
 
     override fun list(): Collection<SimpleVFile> = files.values()
 
     override fun get(NonNls name: String): SimpleVFile? {
-        if ("." == name) return this
-        if (".." == name) return parent
-        val file = files[name]
-        if (file != null) return file
-        for (h in missingFileHandlers) {
-            val root = h.handle(this, name)
-            if (root != null) return root
+        return when (name) {
+            "." -> this
+            ".." -> parent
+            else -> {
+                files[name]?.let { return it }
+                missingFileHandlers.forEach {
+                    it.handle(this, name)?.let { return it }
+                }
+                null
+            }
         }
-        return null
     }
 
     override val path: String
         get() {
-            var path = (if (isDirectory) name else "")
-            path = VFile.SEPARATOR_PATTERN.matcher(path).replaceAll("") // Just in case
-            if (parent != null) {
-                path = parent!!.path + VFile.SEPARATOR + path
+            val path = (when {
+                isDirectory -> name
+                else -> ""
+            }).let {
+                VFile.SEPARATOR_PATTERN.matcher(it).replaceAll("") // Just in case
             }
-            return path
+            val parent = parent
+            return when {
+                parent == null -> path
+                else -> parent.path + VFile.SEPARATOR + path
+            }
         }
 
     override val totalSpace = 0L
@@ -110,33 +106,19 @@ public abstract class SimpleVFile protected() : MutableVFile<SimpleVFile>, Viewa
             return $length
         }
 
-    override fun renameTo(dest: SimpleVFile): Boolean {
-        return false
-    }
+    override fun renameTo(dest: SimpleVFile) = false
 
-    override fun setExecutable(executable: Boolean): Boolean {
-        return false
-    }
+    override fun setExecutable(executable: Boolean) = false
 
-    override fun setExecutable(executable: Boolean, ownerOnly: Boolean): Boolean {
-        return false
-    }
+    override fun setExecutable(executable: Boolean, ownerOnly: Boolean) = false
 
-    override fun setReadable(readable: Boolean): Boolean {
-        return false
-    }
+    override fun setReadable(readable: Boolean) = false
 
-    override fun setReadable(readable: Boolean, ownerOnly: Boolean): Boolean {
-        return false
-    }
+    override fun setReadable(readable: Boolean, ownerOnly: Boolean) = false
 
-    override fun setWritable(writable: Boolean): Boolean {
-        return false
-    }
+    override fun setWritable(writable: Boolean) = false
 
-    override fun setWritable(writable: Boolean, ownerOnly: Boolean): Boolean {
-        return false
-    }
+    override fun setWritable(writable: Boolean, ownerOnly: Boolean) = false
 
     private fun lengthEstimate(): Long {
         try {
@@ -144,17 +126,15 @@ public abstract class SimpleVFile protected() : MutableVFile<SimpleVFile>, Viewa
         } catch (e: IOException) {
             LOG.log(Level.SEVERE, null, e)
         }
-
-        return (-1).toLong()
+        return -1L
     }
 
     public open fun setParent(newParent: SimpleVFile?): Boolean {
-        [SuppressWarnings("ObjectEquality")] val nop = newParent == parent
-        if (nop) return false
-        if (parent != null) parent!!.remove(this)
-        if (newParent != null) {
-            parent = newParent
-            newParent.add(this)
+        if (newParent === parent) return false
+        parent?.remove(this)
+        newParent?.let {
+            parent = it
+            it.add(this)
         }
         return true
     }
@@ -174,26 +154,26 @@ public abstract class SimpleVFile protected() : MutableVFile<SimpleVFile>, Viewa
         for (token in split) {
             when (token) {
                 "", // Ignore repeated separator
-                "." -> {
-                }
+                "." // Ignore current directory
+                -> Unit
                 ".." -> {
-                    // Ignore extra cdup's
                     if (!stack.isEmpty()) stack.removeLast()
                 }
                 else -> stack.addLast(token)
-            }// Ignore current directory
+            }
         }
         LOG.log(Level.FINE, "Getting {0}", stack)
-        var result: SimpleVFile? = this
-        for (token in stack) {
-            result = result!![token]
-            if (result == null) break
+        return stack.fold(this : SimpleVFile?) {(result: SimpleVFile?, token: String) ->
+            val next = result?.get(token)
+            when (next) {
+                null -> return null
+                else -> next
+            }
         }
-        return result
     }
 
     override fun add(file: SimpleVFile): SimpleVFile {
-        if (file == this) throw IllegalArgumentException("file cannot be this")
+        if (file === this) throw IllegalArgumentException("file cannot be this")
         synchronized (files) {
             addImpl(file)
         }
@@ -249,7 +229,7 @@ public abstract class SimpleVFile protected() : MutableVFile<SimpleVFile>, Viewa
         } else {
             out.createNewFile()
             openStream()?.let {
-                it.buffered().copyTo(FileOutputStream(out).buffered())
+                it.buffered().copyTo(out.let { FileOutputStream(it).buffered() })
             }
         }
     }
@@ -283,12 +263,9 @@ public abstract class SimpleVFile protected() : MutableVFile<SimpleVFile>, Viewa
     }
 
     private fun find(NonNls search: String, root: SimpleVFile): List<SimpleVFile> {
-        var search = search
-        search = search.toLowerCase()
         val list = LinkedList<SimpleVFile>()
         for (e in root.list()) {
-            val str = e.name.toLowerCase()
-            if (str.contains(search)) {
+            if (e.name.compareToIgnoreCase(search) == 0) {
                 list.add(e)
             }
             if (e.isDirectory) {
@@ -353,14 +330,13 @@ public abstract class SimpleVFile protected() : MutableVFile<SimpleVFile>, Viewa
 
         SuppressWarnings("WhileLoopReplaceableByForEach")
         private fun locate() {
-            val it = ServiceLoader.load<ProviderPlugin>(javaClass<ProviderPlugin>()).iterator()
+            val it = ServiceLoader.load(javaClass<ProviderPlugin>()).iterator()
             while (it.hasNext()) {
                 try {
                     handlers.add(it.next().register())
                 } catch (e: ServiceConfigurationError) {
                     LOG.log(Level.WARNING, "Unable to load Plugin", e)
                 }
-
             }
         }
 

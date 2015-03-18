@@ -32,9 +32,7 @@ public abstract class ExtendedVFile protected() : SimpleVFile() {
         }
     }
 
-    public open fun calculateChecksum(): Long {
-        return (-1).toLong()
-    }
+    public open fun calculateChecksum(): Long = -1L
 
     public val absoluteName: String
         get() = path + name
@@ -49,7 +47,6 @@ public abstract class ExtendedVFile protected() : SimpleVFile() {
     public abstract val isComplete: Boolean
 
     class object {
-
         private val LOG = Logger.getLogger(javaClass<ExtendedVFile>().getName())
     }
 }

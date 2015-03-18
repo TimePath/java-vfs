@@ -17,16 +17,13 @@ public abstract class JDBCProvider [throws(javaClass<SQLException>())](protected
 
     override val name = url.replace('/', '\\')
 
-    override fun get(NonNls name: String): SimpleVFile? {
-        for (file in list()) if (name == file.name) return file
-        return null
-    }
+    override fun get(NonNls name: String) = list().firstOrNull { it.name == name }
 
     override fun list(): Collection<SimpleVFile> {
         val tableList = LinkedList<JDBCTable>()
         try {
             val dbmd = conn.getMetaData()
-            val types = array<String>("TABLE")
+            val types = array("TABLE")
             val rs = dbmd.getTables(null, null, "%", types)
             while (rs.next()) {
                 tableList.add(JDBCTable(this, rs.getString("TABLE_NAME")))
@@ -36,12 +33,10 @@ public abstract class JDBCProvider [throws(javaClass<SQLException>())](protected
             LOG.log(Level.SEVERE, "Reading from metadata", name)
             LOG.log(Level.SEVERE, null, e)
         }
-
         return tableList
     }
 
     class object {
-
         val LOG = Logger.getLogger(javaClass<JDBCProvider>().getName())
     }
 

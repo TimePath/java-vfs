@@ -12,9 +12,7 @@ public open class ProviderStub protected(NonNls name: String? = null) : SimpleVF
         else -> name
     }
 
-    override fun openStream(): InputStream? {
-        return null
-    }
+    override fun openStream() = null
 
     override val path = ""
 
