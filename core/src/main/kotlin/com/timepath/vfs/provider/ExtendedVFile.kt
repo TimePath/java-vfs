@@ -35,7 +35,7 @@ public abstract class ExtendedVFile protected() : SimpleVFile() {
     public open fun calculateChecksum(): Long = -1L
 
     public val absoluteName: String
-        get() = path + name
+        get() = "$path$name"
 
     public abstract val attributes: Any?
 

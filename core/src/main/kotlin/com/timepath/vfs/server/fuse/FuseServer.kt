@@ -61,7 +61,7 @@ public class FuseServer(private val mountpoint: File) : ProviderStub(), Runnable
                     return -ErrorCodes.ENOENT()
                 }
                 for (vf in file.list()) {
-                    filler.add(path + VFile.SEPARATOR + vf.name)
+                    filler.add("$path${VFile.SEPARATOR}${vf.name}")
                 }
                 return 0
             }

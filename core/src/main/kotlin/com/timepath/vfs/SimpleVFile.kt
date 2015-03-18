@@ -85,7 +85,7 @@ public abstract class SimpleVFile protected() : MutableVFile<SimpleVFile>, Viewa
             val parent = parent
             return when {
                 parent == null -> path
-                else -> parent.path + VFile.SEPARATOR + path
+                else -> "${parent.path}${VFile.SEPARATOR}$path"
             }
         }
 

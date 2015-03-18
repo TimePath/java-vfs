@@ -90,14 +90,14 @@ public class HttpServer [throws(javaClass<IOException>(), javaClass<UnknownHostE
                             if (file != null) {
                                 val stream = file.openStream()
                                 if (stream != null) {
-                                    out(pw, http + " 200 OK")
+                                    out(pw, "$http 200 OK")
                                     out(pw, "")
                                     stream.copyTo(os)
                                     os.flush()
                                     stream.close()
                                 }
                             } else {
-                                out(pw, http + " 404 Not Found")
+                                out(pw, "$http 404 Not Found")
                                 out(pw, "")
                             }
                         }
@@ -127,7 +127,7 @@ public class HttpServer [throws(javaClass<IOException>(), javaClass<UnknownHostE
         }
 
         private fun out(out: PrintWriter, cmd: String) {
-            out.print(cmd + "\r\n")
+            out.print("$cmd\r\n")
             out.flush()
             LOG.log(Level.FINE, ">>> {0}", cmd)
         }

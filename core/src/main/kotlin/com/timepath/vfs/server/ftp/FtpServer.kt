@@ -125,7 +125,7 @@ public class FtpServer
                         } else if (cmd.toUpperCase().startsWith("PWD")) {
                             val dirKnowable = true
                             if (dirKnowable) {
-                                out(pw, "257 \"" + cwd + '"')
+                                out(pw, "257 \"$cwd")
                             } else {
                                 out(pw, "550 Error")
                             }
@@ -139,7 +139,7 @@ public class FtpServer
                         } else if (cmd.toUpperCase().startsWith("PORT")) {
                             val args = cmd.substring(5).split(",")
                             val sep = "."
-                            val dataAddress = args[0] + sep + args[1] + sep + args[2] + sep + args[3]
+                            val dataAddress = "${args[0]}$sep${args[1]}$sep${args[2]}$sep${args[3]}"
                             val dataPort = (Integer.parseInt(args[4]) * 256) + Integer.parseInt(args[5])
                             data = Socket(InetAddress.getByName(dataAddress), dataPort)
                             LOG.log(Level.INFO, "*** Data receiver: {0}", data)
@@ -163,30 +163,30 @@ public class FtpServer
                             pasv = ServerSocket(0)
                             val p = intArray(pasv!!.getLocalPort() / 256, pasv!!.getLocalPort() % 256)
                             val con = java.lang.String.format("%s,%s,%s,%s,%s,%s", h[0].toInt() and 255, h[1].toInt() and 255, h[2].toInt() and 255, h[3].toInt() and 255, p[0] and 255, p[1] and 255)
-                            out(pw, "227 Entering Passive Mode (" + con + ").")
+                            out(pw, "227 Entering Passive Mode ($con).")
                         } else if (cmd.toUpperCase().startsWith("EPSV")) {
                             if (pasv != null) {
                                 pasv!!.close()
                             }
                             pasv = ServerSocket(0)
                             val p = pasv!!.getLocalPort()
-                            out(pw, "229 Entering Extended Passive Mode (|||" + p + "|).")
+                            out(pw, "229 Entering Extended Passive Mode (|||$p|).")
                         } else if (cmd.toUpperCase().startsWith("SIZE")) {
                             val req = cmd.substring(5)
                             val ch: String
-                            ch = if (req.startsWith(VFile.SEPARATOR)) req else canonicalize(cwd + VFile.SEPARATOR + req)
+                            ch = if (req.startsWith(VFile.SEPARATOR)) req else canonicalize("$cwd${VFile.SEPARATOR}$req")
                             val f = query(ch)
                             if ((f == null) || f.isDirectory) {
                                 out(pw, "550 Could not get file size.")
                             } else {
-                                out(pw, "213 " + f.length)
+                                out(pw, "213 ${f.length}")
                             }
                         } else if (cmd.toUpperCase().startsWith("MODE")) {
                             val modes = array<String>("S", "B", "C")
                             val mode = cmd.substring(5)
                             val has = Arrays.asList<String>(*modes).contains(mode)
                             if (has) {
-                                out(pw, "200 Mode set to " + mode + '.')
+                                out(pw, "200 Mode set to $mode.")
                             } else {
                                 out(pw, "504 Bad MODE command.")
                             }
@@ -194,13 +194,13 @@ public class FtpServer
                             LOG.log(Level.FINE, "Changing from: {0}", cwd)
                             val ch: String
                             if (cmd.toUpperCase().startsWith("CDUP")) {
-                                ch = canonicalize(cwd + "/src/main")
+                                ch = canonicalize("$cwd/src/main")
                             } else {
                                 var dir = canonicalize(cmd.substring(4))
                                 if (!dir.endsWith(VFile.SEPARATOR)) {
                                     dir += VFile.SEPARATOR
                                 }
-                                ch = if (dir.startsWith(VFile.SEPARATOR)) dir else canonicalize(cwd + VFile.SEPARATOR + dir)
+                                ch = if (dir.startsWith(VFile.SEPARATOR)) dir else canonicalize("$cwd${VFile.SEPARATOR}$dir")
                             }
                             val f = query(ch)
                             if ((f != null) && f.isDirectory) {
@@ -234,20 +234,20 @@ public class FtpServer
                         } else if (cmd.toUpperCase().startsWith("MDTM")) {
                             val req = cmd.substring(5)
                             val ch: String
-                            ch = if (req.startsWith(VFile.SEPARATOR)) req else canonicalize(cwd + VFile.SEPARATOR + req)
+                            ch = if (req.startsWith(VFile.SEPARATOR)) req else canonicalize("$cwd${VFile.SEPARATOR}$req")
                             val f = query(ch)
                             val cal = Calendar.getInstance()
                             cal.setTimeInMillis(f!!.lastModified)
-                            out(pw, "200 " + mdtm.format(cal.getTime()))
+                            out(pw, "200 ${mdtm.format(cal.getTime())}")
                         } else if (cmd.toUpperCase().startsWith("REST")) {
                             skip = java.lang.Long.parseLong(cmd.substring(5))
-                            out(pw, "350 Skipped " + skip + " bytes")
+                            out(pw, "350 Skipped $skip bytes")
                         } else if (cmd.toUpperCase().startsWith("RETR")) {
                             val toSkip = skip
                             skip = 0
                             val req = cmd.substring(5)
                             val ch: String
-                            ch = if (req.startsWith(VFile.SEPARATOR)) req else canonicalize(cwd + VFile.SEPARATOR + req)
+                            ch = if (req.startsWith(VFile.SEPARATOR)) req else canonicalize("$cwd${VFile.SEPARATOR}$req")
                             val f = query(ch)
                             if ((f != null) && !f.isDirectory) {
                                 out(pw, "150 Opening BINARY mode data connection for file")
@@ -271,7 +271,7 @@ public class FtpServer
                                     os.close()
                                 } catch (se: SocketException) {
                                     if (!("Connection reset" == se.getMessage() || "Broken pipe" == se.getMessage())) {
-                                        LOG.log(Level.SEVERE, "Error serving " + ch, se)
+                                        LOG.log(Level.SEVERE, "Error serving $ch", se)
                                     }
                                     break
                                 }
@@ -326,7 +326,7 @@ public class FtpServer
                                 if (text.isEmpty()) {
                                     text = line
                                 } else {
-                                    text += "\r\n" + line
+                                    text += "\r\n$line"
                                 }
                             }
                             data!!.close()
@@ -341,10 +341,10 @@ public class FtpServer
                             val args = cmd.toUpperCase().substring(5).split(" ")
                             val opt = args[0]
                             val status = args[1]
-                            out(pw, "200 " + opt + " always " + status + '.')
+                            out(pw, "200 $opt always $status.")
                         } else {
                             LOG.log(Level.WARNING, "Unsupported operation {0}", cmd)
-                            out(pw, "502 " + cmd.split(" ")[0] + " not implemented.")
+                            out(pw, "502 ${cmd.split(" ")[0]} not implemented.")
                             //                            out(pw, "500 Unknown command.");
                         }
                     } catch (ex: Exception) {
@@ -402,7 +402,7 @@ public class FtpServer
                 f[0][2] = 'x'
             }
             val fileSize = file.length
-            val perms = spec.toString() + f[0][0] + f[0][1] + f[0][2] + f[1][0] + f[1][1] + f[1][2] + f[2][0] + f[2][1] + f[2][2]
+            val perms = "${spec.toString()}${f[0][0]}${f[0][1]}${f[0][2]}${f[1][0]}${f[1][1]}${f[1][2]}${f[2][0]}${f[2][1]}${f[2][2]}"
             val sb = StringBuilder()
             sb.append(perms)
             sb.append(' ')
@@ -435,7 +435,7 @@ public class FtpServer
         }
 
         private fun out(out: PrintWriter, cmd: String) {
-            out.print(cmd + "\r\n")
+            out.print("$cmd\r\n")
             out.flush()
             LOG.log(Level.FINE, ">>> {0}", cmd)
         }
