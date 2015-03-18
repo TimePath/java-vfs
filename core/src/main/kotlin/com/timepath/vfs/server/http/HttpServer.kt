@@ -42,11 +42,9 @@ public class HttpServer [throws(javaClass<IOException>(), javaClass<UnknownHostE
         }
         servsock = ServerSocket(port, 0, addr)
         LOG.log(Level.INFO, "Listening on {0}:{1}", array<Any>(servsock.getInetAddress().getHostAddress(), servsock.getLocalPort()))
-        Runtime.getRuntime().addShutdownHook(Thread(object : Runnable {
-            override fun run() {
-                LOG.info("HTTP server shutting down...")
-            }
-        }))
+        Runtime.getRuntime().addShutdownHook(Thread {
+            LOG.info("HTTP server shutting down...")
+        })
     }
 
     override fun run() {
