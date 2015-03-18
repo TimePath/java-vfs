@@ -190,7 +190,7 @@ public abstract class SimpleVFile protected() : MutableVFile<SimpleVFile>, Viewa
     }
 
     override fun remove(file: SimpleVFile) {
-        if (file == this) throw IllegalArgumentException("file cannot be this")
+        if (file === this) throw IllegalArgumentException("file cannot be this")
         synchronized (files) {
             removeImpl(file)
         }
