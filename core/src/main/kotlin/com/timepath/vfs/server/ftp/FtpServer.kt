@@ -184,9 +184,9 @@ public class FtpServer
                                 out(pw, "213 ${f.length}")
                             }
                         } else if (cmd.toUpperCase().startsWith("MODE")) {
-                            val modes = array<String>("S", "B", "C")
+                            val modes = array("S", "B", "C")
                             val mode = cmd.substring(5)
-                            val has = Arrays.asList<String>(*modes).contains(mode)
+                            val has = mode in modes
                             if (has) {
                                 out(pw, "200 Mode set to $mode.")
                             } else {
