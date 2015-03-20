@@ -30,8 +30,7 @@ public trait VFile<V : VFile<V>> {
 
     val parent: V?
 
-    [suppress("REDUNDANT_PROJECTION")]
-    fun list(): Collection<out V>
+    fun list(): Collection<V>
 
     /**
      * Get a file by literal name

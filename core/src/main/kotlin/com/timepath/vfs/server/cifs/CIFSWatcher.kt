@@ -52,14 +52,13 @@ class CIFSWatcher private(port: Int) {
                         Thread(object : Runnable {
                             override fun run() {
                                 try {
-                                    val `is` = client.getInputStream()
-                                    val os = client.getOutputStream()
+                                    val input = client.getInputStream()
                                     while (!client.isClosed()) {
                                         try {
                                             val buf = ByteArray(200)
-                                            while (`is`.read(buf) != -1) {
+                                            while (input.read(buf) != -1) {
                                                 val text = String(buf).trim()
-                                                LOG.info(Arrays.toString(text.getBytes()))
+                                                LOG.info(Arrays.toString(text.toByteArray()))
                                                 LOG.info(text)
                                             }
                                             // TODO: Packet handling
@@ -68,7 +67,6 @@ class CIFSWatcher private(port: Int) {
                                             client.close()
                                             break
                                         }
-
                                     }
                                     LOG.info("Socket closed")
                                 } catch (ex: IOException) {

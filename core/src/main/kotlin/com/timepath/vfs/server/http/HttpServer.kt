@@ -35,12 +35,9 @@ public class HttpServer [throws(javaClass<IOException>(), javaClass<UnknownHostE
     private val servsock: ServerSocket
 
     init {
-        var addr = addr
-        if (addr == null) {
-            // On windows, this prevents firewall warnings. It's also good for security in general
-            addr = InetAddress.getByName(null) // cannot use java7 InetAddress.getLoopbackAddress().
-        }
-        servsock = ServerSocket(port, 0, addr)
+        // On windows, this prevents firewall warnings. It's also good for security in general
+        val loopback = InetAddress.getByName(null) // cannot use java7 InetAddress.getLoopbackAddress().
+        servsock = ServerSocket(port, 0, addr ?: loopback)
         LOG.log(Level.INFO, "Listening on {0}:{1}", array<Any>(servsock.getInetAddress().getHostAddress(), servsock.getLocalPort()))
         Runtime.getRuntime().addShutdownHook(Thread {
             LOG.info("HTTP server shutting down...")

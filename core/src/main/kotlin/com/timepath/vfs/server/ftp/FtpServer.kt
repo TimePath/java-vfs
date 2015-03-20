@@ -1,23 +1,25 @@
 package com.timepath.vfs.server.ftp
 
 import com.timepath.vfs.MockFile
-import com.timepath.vfs.provider.ProviderStub
 import com.timepath.vfs.SimpleVFile
 import com.timepath.vfs.VFile
-
-import java.io.*
+import com.timepath.vfs.provider.ProviderStub
+import java.io.BufferedReader
+import java.io.IOException
+import java.io.InputStreamReader
+import java.io.PrintWriter
 import java.net.InetAddress
 import java.net.ServerSocket
 import java.net.Socket
 import java.net.SocketException
 import java.text.SimpleDateFormat
 import java.util.*
+import java.util.concurrent.Callable
 import java.util.concurrent.Executors
 import java.util.concurrent.ThreadFactory
 import java.util.logging.Level
 import java.util.logging.Logger
 import java.util.regex.Pattern
-import java.util.concurrent.Callable
 
 /**
  * With reference to:
@@ -362,9 +364,10 @@ public class FtpServer
         }
 
         private fun canonicalize(string: String): String {
-            var string = string
-            if (string.endsWith(VFile.SEPARATOR)) {
-                string = string.substring(0, string.length() - 1)
+            [suppress("NAME_SHADOWING")]
+            val string = when {
+                string.endsWith(VFile.SEPARATOR) -> string.substring(0, string.length() - 1)
+                else -> string
             }
             val split = string.split(VFile.SEPARATOR)
             val pieces = LinkedList<String>()
