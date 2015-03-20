@@ -14,7 +14,7 @@ import java.util.logging.Logger
  */
 public open class LocalFileProvider(file: File) : LocalFile(file) {
 
-    {
+    init {
         // TODO: lazy loading
         if (file.isDirectory()) {
             insert(file)
@@ -64,7 +64,7 @@ public open class LocalFileProvider(file: File) : LocalFile(file) {
         LOG.log(Level.INFO, "Recursive file load took {0}ms", System.currentTimeMillis() - start)
     }
 
-    class object {
+    companion object {
 
         private val LOG = Logger.getLogger(javaClass<LocalFileProvider>().getName())
 

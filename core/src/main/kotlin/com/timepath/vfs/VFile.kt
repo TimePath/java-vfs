@@ -81,7 +81,7 @@ public trait VFile<V : VFile<V>> {
      */
     override fun toString(): String
 
-    class object {
+    companion object {
 
         NonNls
         val SEPARATOR: String = "/"

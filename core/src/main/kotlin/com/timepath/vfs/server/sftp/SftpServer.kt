@@ -193,7 +193,7 @@ public class SftpServer(NonNls name: String, private val port: Int = 0) : Provid
         override fun handleClose() = Unit
     }
 
-    class object {
+    companion object {
 
         private val LOG = Logger.getLogger(javaClass<SftpServer>().getName())
 

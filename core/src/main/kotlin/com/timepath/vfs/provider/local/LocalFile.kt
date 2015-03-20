@@ -42,7 +42,7 @@ open class LocalFile(protected val file: File) : ExtendedVFile() {
     override val length: Long
         get() = file.length()
 
-    class object {
+    companion object {
         private val LOG = Logger.getLogger(javaClass<LocalFile>().getName())
     }
 

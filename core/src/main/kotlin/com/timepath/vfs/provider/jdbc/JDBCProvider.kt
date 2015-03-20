@@ -36,7 +36,7 @@ public abstract class JDBCProvider [throws(javaClass<SQLException>())](protected
         return tableList
     }
 
-    class object {
+    companion object {
         val LOG = Logger.getLogger(javaClass<JDBCProvider>().getName())
     }
 

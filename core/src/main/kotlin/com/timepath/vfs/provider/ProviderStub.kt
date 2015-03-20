@@ -26,7 +26,7 @@ public open class ProviderStub protected(NonNls name: String? = null) : SimpleVF
 
     override val owner = NOBODY
 
-    class object {
+    companion object {
 
         NonNls
         private val NOBODY = System.getProperty("user.name", "nobody")

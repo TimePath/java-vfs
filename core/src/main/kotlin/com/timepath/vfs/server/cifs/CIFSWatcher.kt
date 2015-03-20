@@ -23,7 +23,7 @@ import kotlin.platform.platformStatic
 class CIFSWatcher private(port: Int) {
     private val listeners = LinkedList<FileChangeListener>()
 
-            ;{
+    init {
         try {
             // On windows, the loopback address does not prompt the firewall
             // Also good for security in general
@@ -200,7 +200,7 @@ class CIFSWatcher private(port: Int) {
         listeners.add(listener)
     }
 
-    class object {
+    companion object {
 
         private val LOG = Logger.getLogger(javaClass<CIFSWatcher>().getName())
         private var instance: CIFSWatcher? = null

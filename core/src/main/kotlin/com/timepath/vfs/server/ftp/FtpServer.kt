@@ -62,7 +62,7 @@ public class FtpServer
     }
     private var servsock: ServerSocket? = null
 
-    {
+    init {
         bind()
     }
 
@@ -96,7 +96,7 @@ public class FtpServer
         private var pasv: ServerSocket? = null
         private var cwd = VFile.SEPARATOR
 
-        {
+        init {
             LOG.log(Level.FINE, "{0} connected.", client)
         }
 
@@ -219,7 +219,7 @@ public class FtpServer
                             val files = LinkedList(v!!.list())
                             Collections.sort<SimpleVFile>(files, nameComparator)
                             val executor = Executors.newCachedThreadPool()
-                            val lines = arrayOfNulls<String>(files.size()).mapIndexed {(i, s) ->
+                            val lines = arrayOfNulls<String>(files.size()).mapIndexed { i, s ->
                                 executor.submit(object : Callable<String> {
                                     override fun call() = toFTPString(files[i])
                                 })
@@ -388,7 +388,7 @@ public class FtpServer
         }
     }
 
-    class object {
+    companion object {
 
         private val LOG = Logger.getLogger(javaClass<FtpServer>().getName())
         private val mdtm = SimpleDateFormat("yyyyMMddhhmmss")

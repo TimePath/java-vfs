@@ -13,7 +13,7 @@ import java.util.zip.ZipEntry
 
 public class ZipFileProvider [throws(javaClass<IOException>())](data: ByteArray) : ProviderStub() {
 
-    {
+    init {
         val bis = data.inputStream.buffered()
         bis.mark(data.size())
         bis.let { ZipInputStream(it) }.use {
@@ -36,7 +36,7 @@ public class ZipFileProvider [throws(javaClass<IOException>())](data: ByteArray)
     }
 
     private fun atPath(path: CharSequence) = VFile.SEPARATOR_PATTERN.split(path).let { split ->
-        (split.size() - 1).indices.fold(this : SimpleVFile) {(dir: SimpleVFile, i: Int) ->
+        (split.size() - 1).indices.fold(this : SimpleVFile) { dir, i ->
             val dirName = split[i]
             dir[dirName] ?: MockFile(dirName).let {
                 dir.add(it)
@@ -44,7 +44,7 @@ public class ZipFileProvider [throws(javaClass<IOException>())](data: ByteArray)
         }
     }
 
-    class object {
+    companion object {
         private val LOG = Logger.getLogger(javaClass<ZipFileProvider>().getName())
     }
 

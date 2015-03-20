@@ -34,7 +34,7 @@ public class HttpServer [throws(javaClass<IOException>(), javaClass<UnknownHostE
     private val pool = Executors.newFixedThreadPool(10, DaemonThreadFactory())
     private val servsock: ServerSocket
 
-    {
+    init {
         var addr = addr
         if (addr == null) {
             // On windows, this prevents firewall warnings. It's also good for security in general
@@ -60,7 +60,7 @@ public class HttpServer [throws(javaClass<IOException>(), javaClass<UnknownHostE
 
     private inner class HTTPConnection (private val client: Socket) : Runnable {
 
-        {
+        init {
             LOG.log(Level.FINE, "{0} connected.", client)
         }
 
@@ -113,7 +113,7 @@ public class HttpServer [throws(javaClass<IOException>(), javaClass<UnknownHostE
         }
     }
 
-    class object {
+    companion object {
 
         private val LOG = Logger.getLogger(javaClass<HttpServer>().getName())
 

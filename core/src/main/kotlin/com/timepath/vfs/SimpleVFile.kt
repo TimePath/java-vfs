@@ -26,7 +26,7 @@ public abstract class SimpleVFile protected() : MutableVFile<SimpleVFile>, Viewa
     override var parent: SimpleVFile? = null
         protected set
 
-    {
+    init {
         files = Collections.synchronizedMap<String, SimpleVFile>(HashMap<String, SimpleVFile>(0))
         listeners = LinkedList<FileChangeListener>()
     }
@@ -163,7 +163,7 @@ public abstract class SimpleVFile protected() : MutableVFile<SimpleVFile>, Viewa
             }
         }
         LOG.log(Level.FINE, "Getting {0}", stack)
-        return stack.fold(this : SimpleVFile?) {(result: SimpleVFile?, token: String) ->
+        return stack.fold(this : SimpleVFile?) { result, token ->
             val next = result?.get(token)
             when (next) {
                 null -> return null
@@ -316,7 +316,7 @@ public abstract class SimpleVFile protected() : MutableVFile<SimpleVFile>, Viewa
         public fun handle(parent: SimpleVFile, name: String): SimpleVFile?
     }
 
-    class object {
+    companion object {
 
         public val pool: ExecutorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() * 10, DaemonThreadFactory())
         private val LOG = Logger.getLogger(javaClass<SimpleVFile>().getName())
@@ -344,7 +344,7 @@ public abstract class SimpleVFile protected() : MutableVFile<SimpleVFile>, Viewa
             missingFileHandlers.add(h)
         }
 
-        {
+        init {
             locate()
         }
     }

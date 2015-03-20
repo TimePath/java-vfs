@@ -46,7 +46,7 @@ public abstract class ExtendedVFile protected() : SimpleVFile() {
 
     public abstract val isComplete: Boolean
 
-    class object {
+    companion object {
         private val LOG = Logger.getLogger(javaClass<ExtendedVFile>().getName())
     }
 }

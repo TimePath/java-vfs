@@ -21,7 +21,7 @@ import java.util.logging.Logger
 public class FuseServer(private val mountpoint: File) : ProviderStub(), Runnable {
     private val fuse: FuseFilesystemAdapterFull
 
-    {
+    init {
         fuse = object : FuseFilesystemAdapterFull() {
             override fun getattr(path: String, stat: StatWrapper): Int {
                 val file = query(path)
@@ -79,7 +79,7 @@ public class FuseServer(private val mountpoint: File) : ProviderStub(), Runnable
         }
     }
 
-    class object {
+    companion object {
 
         private val LOG = Logger.getLogger(javaClass<FuseServer>().getName())
     }
