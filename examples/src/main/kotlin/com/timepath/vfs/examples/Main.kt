@@ -6,9 +6,8 @@ import com.timepath.vfs.server.ftp.FtpServer
 import com.timepath.vfs.server.fuse.FuseServer
 import com.timepath.vfs.server.http.HttpServer
 import com.timepath.vfs.server.sftp.SftpServer
-
-import kotlin.platform.platformStatic
 import java.io.File
+import kotlin.platform.platformStatic
 
 object Main {
 

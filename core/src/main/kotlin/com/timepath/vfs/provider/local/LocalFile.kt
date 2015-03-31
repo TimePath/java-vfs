@@ -1,8 +1,10 @@
 package com.timepath.vfs.provider.local
 
 import com.timepath.vfs.provider.ExtendedVFile
-
-import java.io.*
+import java.io.BufferedInputStream
+import java.io.File
+import java.io.FileInputStream
+import java.io.FileNotFoundException
 import java.util.logging.Level
 import java.util.logging.Logger
 

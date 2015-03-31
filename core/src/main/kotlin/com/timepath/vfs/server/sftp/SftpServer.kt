@@ -1,8 +1,8 @@
 package com.timepath.vfs.server.sftp
 
 import com.timepath.util.Cache
-import com.timepath.vfs.provider.ProviderStub
 import com.timepath.vfs.SimpleVFile
+import com.timepath.vfs.provider.ProviderStub
 import org.apache.sshd.SshServer
 import org.apache.sshd.common.NamedFactory
 import org.apache.sshd.common.Session
@@ -17,7 +17,6 @@ import org.apache.sshd.server.keyprovider.SimpleGeneratorHostKeyProvider
 import org.apache.sshd.sftp.subsystem.SftpSubsystem
 import org.jetbrains.annotations.Contract
 import org.jetbrains.annotations.NonNls
-
 import java.io.IOException
 import java.util.*
 import java.util.logging.Level

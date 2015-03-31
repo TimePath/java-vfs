@@ -2,8 +2,6 @@ package com.timepath.vfs.provider.security
 
 import com.timepath.vfs.SimpleVFile
 import com.timepath.vfs.provider.DelegateProvider
-import org.jetbrains.annotations.Contract
-
 import java.io.InputStream
 
 /**

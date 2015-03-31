@@ -1,7 +1,7 @@
 package com.timepath.vfs.server.fuse
 
-import com.timepath.vfs.provider.ProviderStub
 import com.timepath.vfs.VFile
+import com.timepath.vfs.provider.ProviderStub
 import net.fusejna.DirectoryFiller
 import net.fusejna.ErrorCodes
 import net.fusejna.FuseException
@@ -9,10 +9,8 @@ import net.fusejna.StructFuseFileInfo.FileInfoWrapper
 import net.fusejna.StructStat.StatWrapper
 import net.fusejna.types.TypeMode.NodeType
 import net.fusejna.util.FuseFilesystemAdapterFull
-
 import java.io.File
 import java.io.IOException
-import java.io.InputStream
 import java.nio.ByteBuffer
 import java.util.logging.Level
 import java.util.logging.Logger

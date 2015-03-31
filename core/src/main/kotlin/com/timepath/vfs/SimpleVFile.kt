@@ -4,14 +4,16 @@ import com.timepath.io.utils.ViewableData
 import com.timepath.util.concurrent.DaemonThreadFactory
 import com.timepath.vfs.provider.ProviderPlugin
 import org.jetbrains.annotations.NonNls
-
-import javax.swing.*
-import java.io.*
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
 import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.logging.Level
 import java.util.logging.Logger
+import javax.swing.Icon
+import javax.swing.UIManager
 
 /**
  * A simple {@link com.timepath.vfs.VFile} implementation using synchronized recursive {@link java.util.HashMap}s

@@ -2,9 +2,8 @@ package com.timepath.vfs.provider
 
 import com.timepath.swing.TreeUtils
 import com.timepath.vfs.SimpleVFile
-
-import javax.swing.tree.DefaultMutableTreeNode
 import java.util.logging.Logger
+import javax.swing.tree.DefaultMutableTreeNode
 
 /**
  * @author TimePath

@@ -1,19 +1,16 @@
 package com.timepath.vfs.server.http
 
 import com.timepath.util.concurrent.DaemonThreadFactory
+import com.timepath.vfs.VFile
 import com.timepath.vfs.provider.ProviderStub
-import com.timepath.vfs.SimpleVFile
-
 import java.io.*
 import java.net.InetAddress
 import java.net.ServerSocket
 import java.net.Socket
 import java.net.UnknownHostException
-import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.logging.Level
 import java.util.logging.Logger
-import com.timepath.vfs.VFile
 
 /**
  * @author TimePath

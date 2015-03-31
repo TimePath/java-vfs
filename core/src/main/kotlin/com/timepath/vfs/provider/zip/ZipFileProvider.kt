@@ -2,14 +2,13 @@ package com.timepath.vfs.provider.zip
 
 import com.timepath.vfs.MockFile
 import com.timepath.vfs.SimpleVFile
+import com.timepath.vfs.VFile
 import com.timepath.vfs.provider.ProviderStub
-
 import java.io.IOException
 import java.util.logging.Level
 import java.util.logging.Logger
-import java.util.zip.ZipInputStream
-import com.timepath.vfs.VFile
 import java.util.zip.ZipEntry
+import java.util.zip.ZipInputStream
 
 public class ZipFileProvider [throws(javaClass<IOException>())](data: ByteArray) : ProviderStub() {
 

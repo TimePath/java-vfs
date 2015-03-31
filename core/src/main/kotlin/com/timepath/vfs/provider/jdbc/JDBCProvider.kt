@@ -1,10 +1,11 @@
 package com.timepath.vfs.provider.jdbc
 
-import com.timepath.vfs.provider.ProviderStub
 import com.timepath.vfs.SimpleVFile
+import com.timepath.vfs.provider.ProviderStub
 import org.jetbrains.annotations.NonNls
-
-import java.sql.*
+import java.sql.Connection
+import java.sql.DriverManager
+import java.sql.SQLException
 import java.util.LinkedList
 import java.util.logging.Level
 import java.util.logging.Logger

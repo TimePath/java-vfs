@@ -3,8 +3,6 @@ package com.timepath.vfs.provider
 import com.timepath.vfs.SimpleVFile
 import org.jetbrains.annotations.NonNls
 
-import java.io.InputStream
-
 public open class ProviderStub protected(NonNls name: String? = null) : SimpleVFile() {
 
     override val name: String = when (name) {

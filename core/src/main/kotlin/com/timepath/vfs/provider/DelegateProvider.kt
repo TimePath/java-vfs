@@ -3,11 +3,10 @@ package com.timepath.vfs.provider
 import com.timepath.vfs.FileChangeListener
 import com.timepath.vfs.SimpleVFile
 import org.jetbrains.annotations.Contract
-
-import javax.swing.Icon
 import java.io.File
 import java.io.IOException
 import java.util.LinkedList
+import javax.swing.Icon
 
 /**
  * Decorates files. Implementers must override {@link #wrap(com.timepath.vfs.SimpleVFile)} to return their subclass
