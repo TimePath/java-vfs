@@ -3,31 +3,18 @@ package com.timepath.vfs.server.http
 import com.timepath.util.concurrent.DaemonThreadFactory
 import com.timepath.vfs.VFile
 import com.timepath.vfs.provider.ProviderStub
-import java.io.*
+import java.io.BufferedReader
+import java.io.IOException
+import java.io.PrintWriter
 import java.net.InetAddress
 import java.net.ServerSocket
 import java.net.Socket
-import java.net.UnknownHostException
 import java.util.concurrent.Executors
 import java.util.logging.Level
 import java.util.logging.Logger
 
-/**
- * @author TimePath
- */
-
-throws(javaClass<IOException>(), javaClass<UnknownHostException>())
-public fun HttpServer(): HttpServer {
-    return HttpServer(8000)
-}
-
-throws(javaClass<IOException>(), javaClass<UnknownHostException>())
-public fun HttpServer(port: Int): HttpServer {
-    return HttpServer(port, null)
-}
-
-public class HttpServer [throws(javaClass<IOException>(), javaClass<UnknownHostException>())]
-(port: Int, addr: InetAddress?) : ProviderStub(), Runnable {
+public class HttpServer(port: Int = 8000, addr: InetAddress? = null)
+: ProviderStub(), Runnable {
     private val pool = Executors.newFixedThreadPool(10, DaemonThreadFactory())
     private val servsock: ServerSocket
 
@@ -44,82 +31,69 @@ public class HttpServer [throws(javaClass<IOException>(), javaClass<UnknownHostE
     override fun run() {
         while (true) {
             try {
-                pool.submit(HTTPConnection(servsock.accept()))
+                val socket = servsock.accept()
+                LOG.log(Level.FINE, "{0} connected.", socket)
+                pool.submit(HTTPConnection(socket))
+                LOG.log(Level.FINE, "{0} closed.", socket)
             } catch (ex: IOException) {
                 LOG.log(Level.SEVERE, null, ex)
             }
-
         }
     }
 
-    private inner class HTTPConnection (private val client: Socket) : Runnable {
-
-        init {
-            LOG.log(Level.FINE, "{0} connected.", client)
-        }
-
+    inner class HTTPConnection(private val client: Socket) : Runnable {
         override fun run() {
-            try {
-                val `is` = BufferedInputStream(client.getInputStream())
-                val os = BufferedOutputStream(client.getOutputStream())
-                val br = BufferedReader(InputStreamReader(`is`))
-                val pw = PrintWriter(os, true)
-                while (!client.isClosed()) {
-                    try {
-                        val cmd = `in`(br)
-                        if (cmd == null) {
-                            client.close()
-                            break
-                        } else if (cmd.startsWith("GET")) {
-                            val args = cmd.substring(4).split(" ")
-                            var req = args[0]
-                            val http = args[1]
-                            if (req == VFile.SEPARATOR) {
-                                req = "/index.html"
-                            }
-                            val file = query(req)
-                            LOG.log(Level.FINE, "*** GETing {0}", req)
-                            if (file != null) {
-                                file.openStream()?.let {
-                                    out(pw, "$http 200 OK")
-                                    out(pw, "")
-                                    it.copyTo(os)
-                                    os.flush()
-                                    it.close()
-                                }
-                            } else {
-                                out(pw, "$http 404 Not Found")
-                                out(pw, "")
-                            }
+            val input = client.getInputStream().buffered()
+            val output = client.getOutputStream().buffered()
+            val br = input.reader().buffered()
+            val pw = output.writer().buffered().let { PrintWriter(it, true) }
+            while (!client.isClosed()) {
+                try {
+                    val cmd = recv(br)
+                    if (cmd == null) {
+                        client.close()
+                        break
+                    } else if (cmd.startsWith("GET")) {
+                        val args = cmd.substring(4).split(" ")
+                        var req = args[0]
+                        val http = args[1]
+                        if (req == VFile.SEPARATOR) {
+                            req = "/index.html"
                         }
-                    } catch (ex: Exception) {
-                        LOG.log(Level.SEVERE, null, ex)
+                        LOG.log(Level.FINE, "*** GETing {0}", req)
+                        val file = this@HttpServer.query(req)?.openStream()
+                        if (file != null) {
+                            send(pw, "$http 200 OK")
+                            send(pw, "")
+                            file.copyTo(output)
+                            output.flush()
+                            file.close()
+                        } else {
+                            send(pw, "$http 404 Not Found")
+                            send(pw, "")
+                        }
                     }
-
-                    client.close()
+                } catch (ex: Exception) {
+                    LOG.log(Level.SEVERE, null, ex)
                 }
-                LOG.log(Level.FINE, "{0} closed.", client)
-            } catch (ex: IOException) {
-                LOG.log(Level.SEVERE, null, ex)
+                client.close()
             }
-
         }
     }
 
     companion object {
 
-        private val LOG = Logger.getLogger(javaClass<HttpServer>().getName())
+        internal val LOG = Logger.getLogger(javaClass<HttpServer>().getName())
 
-        throws(javaClass<IOException>())
-        private fun `in`(`in`: BufferedReader): String? {
-            val s = `in`.readLine()
+        internal fun recv(input: BufferedReader): String? {
+            val s = input.readLine()
             LOG.log(Level.FINE, "<<< {0}", s)
             return s
         }
 
-        private fun out(out: PrintWriter, cmd: String) {
-            out.print("$cmd\r\n")
-            out.flush()
+        internal fun send(output: PrintWriter, cmd: String) {
+            output.print("$cmd\r\n")
+            output.flush()
             LOG.log(Level.FINE, ">>> {0}", cmd)
         }
     }

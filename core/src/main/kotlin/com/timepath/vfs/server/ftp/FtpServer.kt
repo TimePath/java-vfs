@@ -393,10 +393,10 @@ public class FtpServer
 
     companion object {
 
-        private val LOG = Logger.getLogger(javaClass<FtpServer>().getName())
-        private val mdtm = SimpleDateFormat("yyyyMMddhhmmss")
+        internal val LOG = Logger.getLogger(javaClass<FtpServer>().getName())
+        internal val mdtm = SimpleDateFormat("yyyyMMddhhmmss")
 
-        private fun toFTPString(file: SimpleVFile): String {
+        internal fun toFTPString(file: SimpleVFile): String {
             var spec = '-' // TODO: links
             val f = array<CharArray>(charArray('r', '-', '-'), charArray('r', '-', '-'), charArray('r', '-', '-')) // RWX: User, Group, Everybody
             if (file.isDirectory) {
@@ -431,13 +431,13 @@ public class FtpServer
         }
 
         throws(javaClass<IOException>())
-        private fun `in`(`in`: BufferedReader): String? {
+        internal fun `in`(`in`: BufferedReader): String? {
             val s = `in`.readLine()
             LOG.log(Level.FINE, "<<< {0}", s)
             return s
         }
 
-        private fun out(out: PrintWriter, cmd: String) {
+        internal fun out(out: PrintWriter, cmd: String) {
             out.print("$cmd\r\n")
             out.flush()
             LOG.log(Level.FINE, ">>> {0}", cmd)
