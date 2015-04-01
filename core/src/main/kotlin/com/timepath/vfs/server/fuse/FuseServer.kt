@@ -36,9 +36,8 @@ public class FuseServer(private val mountpoint: File) : ProviderStub(), Runnable
             }
 
             override fun read(path: String, buffer: ByteBuffer, size: Long, offset: Long, info: FileInfoWrapper?): Int {
-                val file = query(path)
-                if (file != null) {
-                    val stream = file.openStream()!!
+                query(path)?.let {
+                    val stream = it.openStream()!!
                     try {
                         stream.skip(offset)
                         val buf = ByteArray(Math.max(Math.min(size, stream.available().toLong()), 0).toInt())
@@ -48,7 +47,6 @@ public class FuseServer(private val mountpoint: File) : ProviderStub(), Runnable
                     } catch (ex: IOException) {
                         LOG.log(Level.SEVERE, null, ex)
                     }
-
                 }
                 return -1
             }

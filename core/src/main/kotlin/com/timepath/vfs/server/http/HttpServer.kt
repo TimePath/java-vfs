@@ -80,13 +80,12 @@ public class HttpServer [throws(javaClass<IOException>(), javaClass<UnknownHostE
                             val file = query(req)
                             LOG.log(Level.FINE, "*** GETing {0}", req)
                             if (file != null) {
-                                val stream = file.openStream()
-                                if (stream != null) {
+                                file.openStream()?.let {
                                     out(pw, "$http 200 OK")
                                     out(pw, "")
-                                    stream.copyTo(os)
+                                    it.copyTo(os)
                                     os.flush()
-                                    stream.close()
+                                    it.close()
                                 }
                             } else {
                                 out(pw, "$http 404 Not Found")

@@ -159,16 +159,16 @@ public class FtpServer
                             LOG.log(Level.INFO, "*** Data receiver: {0}", data)
                             out(pw, "200 PORT command successful.")
                         } else if (cmd.toUpperCase().startsWith("PASV")) {
-                            if (pasv != null) {
-                                pasv!!.close()
+                            pasv?.let {
+                                it.close()
                             }
                             pasv = ServerSocket(0)
                             val p = intArray(pasv!!.getLocalPort() / 256, pasv!!.getLocalPort() % 256)
                             val con = java.lang.String.format("%s,%s,%s,%s,%s,%s", h[0].toInt() and 255, h[1].toInt() and 255, h[2].toInt() and 255, h[3].toInt() and 255, p[0] and 255, p[1] and 255)
                             out(pw, "227 Entering Passive Mode ($con).")
                         } else if (cmd.toUpperCase().startsWith("EPSV")) {
-                            if (pasv != null) {
-                                pasv!!.close()
+                            pasv?.let {
+                                it.close()
                             }
                             pasv = ServerSocket(0)
                             val p = pasv!!.getLocalPort()
@@ -213,8 +213,8 @@ public class FtpServer
                             }
                         } else if (cmd.toUpperCase().startsWith("LIST")) {
                             out(pw, "150 Here comes the directory listing.")
-                            if (pasv != null) {
-                                data = pasv!!.accept()
+                            pasv?.let {
+                                data = it.accept()
                             }
                             val out = PrintWriter(data!!.getOutputStream(), true)
                             val v = query(cwd)
@@ -253,8 +253,8 @@ public class FtpServer
                             val f = query(ch)
                             if ((f != null) && !f.isDirectory) {
                                 out(pw, "150 Opening BINARY mode data connection for file")
-                                if (pasv != null) {
-                                    data = pasv!!.accept()
+                                pasv?.let {
+                                    data = it.accept()
                                 }
                                 try {
                                     val stream = f.openStream()!!
@@ -317,8 +317,8 @@ public class FtpServer
                             // Upload file
                             val file = cmd.substring(5)
                             out(pw, "150 Entering Transfer Mode")
-                            if (pasv != null) {
-                                data = pasv!!.accept()
+                            pasv?.let {
+                                data = it.accept()
                             }
                             val `in` = BufferedReader(InputStreamReader(data!!.getInputStream()))
                             val out = PrintWriter(data!!.getOutputStream(), true)
