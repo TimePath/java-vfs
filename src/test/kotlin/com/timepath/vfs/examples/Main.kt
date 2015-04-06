@@ -40,4 +40,3 @@ object Main {
                         .add(MockFile("test.txt", "It works!")))
     }
 }
-

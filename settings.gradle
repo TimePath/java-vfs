@@ -1,0 +1,2 @@
+include 'fuse-jna'
+project(':fuse-jna').projectDir = new File(settingsDir, 'lib/fuse-jna')

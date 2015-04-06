@@ -1,13 +1,7 @@
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            artifactId 'java-vfs-examples'
-        }
-    }
-}
+apply from: 'https://raw.githubusercontent.com/SourceUtils/super/0e6138dace/common.gradle'
 
 buildscript {
-    ext.kotlin_version = '0.11.91'
+    ext.kotlin_version = '0.11.91.1'
     repositories {
         mavenCentral()
         maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
@@ -22,5 +16,7 @@ apply plugin: 'kotlin'
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 
-    compile project(':java-vfs:core')
+    compile project(':fuse-jna')
+    compile 'org.apache.sshd:sshd-sftp:0.11.0'
+    compile 'com.timepath:commons:1.0-SNAPSHOT'
 }
