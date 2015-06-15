@@ -4,7 +4,7 @@ package com.timepath.vfs
  * @param <V> Specific type of VFile
  * @author TimePath
  */
-public trait MutableVFile<V : VFile<V>> : VFile<V> {
+public interface MutableVFile<V : VFile<V>> : VFile<V> {
 
     public fun add(file: V): V
 

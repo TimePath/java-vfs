@@ -8,7 +8,7 @@ import javax.swing.tree.DefaultMutableTreeNode
 /**
  * @author TimePath
  */
-public abstract class ExtendedVFile protected() : SimpleVFile() {
+public abstract class ExtendedVFile protected constructor() : SimpleVFile() {
 
     public fun analyze(top: DefaultMutableTreeNode, leaves: Boolean) {
         if (top.getUserObject() is ExtendedVFile) {

@@ -13,7 +13,7 @@ import java.util.logging.Logger
 /**
  * @author TimePath
  */
-public abstract class JDBCProvider [throws(javaClass<SQLException>())](protected val url: String) : ProviderStub() {
+public abstract class JDBCProvider @throws(SQLException::class) constructor(protected val url: String) : ProviderStub() {
     val conn: Connection = DriverManager.getConnection(url)
 
     override val name = url.replace('/', '\\')
@@ -24,7 +24,7 @@ public abstract class JDBCProvider [throws(javaClass<SQLException>())](protected
         val tableList = LinkedList<JDBCTable>()
         try {
             val dbmd = conn.getMetaData()
-            val types = array("TABLE")
+            val types = arrayOf("TABLE")
             val rs = dbmd.getTables(null, null, "%", types)
             while (rs.next()) {
                 tableList.add(JDBCTable(this, rs.getString("TABLE_NAME")))

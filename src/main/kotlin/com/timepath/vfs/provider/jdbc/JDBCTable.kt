@@ -26,7 +26,7 @@ class JDBCTable(private val jdbcProvider: JDBCProvider, name: String) : Provider
                     val len = rs.getMetaData().getColumnCount()
                     while (rs.next()) {
                         val sb = StringBuilder()
-                        for (i in len.indices) {
+                        for (i in 0..len - 1) {
                             sb.append('\t').append(rs.getString(i + 1))
                         }
                         rows.add(MockFile(rs.getString(1), sb.substring(1)))

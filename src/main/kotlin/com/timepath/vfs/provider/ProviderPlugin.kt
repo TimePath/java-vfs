@@ -5,7 +5,7 @@ import com.timepath.vfs.SimpleVFile
 /**
  * @author TimePath
  */
-public trait ProviderPlugin {
+public interface ProviderPlugin {
 
     public fun register(): SimpleVFile.FileHandler
 }

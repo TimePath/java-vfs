@@ -48,7 +48,7 @@ public class FtpServer
  * @param addr If null, listen on all available interfaces
  * @throws java.io.IOException
  */
-[throws(javaClass<IOException>())]
+@throws(IOException::class) constructor
 (private val port: Int = 2121, private var address: InetAddress? = null) : ProviderStub(), Runnable {
     private val pool = Executors.newFixedThreadPool(10, object : ThreadFactory {
         override fun newThread(r: Runnable): Thread {
@@ -68,7 +68,7 @@ public class FtpServer
         bind()
     }
 
-    throws(javaClass<IOException>())
+    throws(IOException::class)
     private fun bind() {
         if (address == null) {
             address = InetAddress.getByName(null)
@@ -77,7 +77,7 @@ public class FtpServer
     }
 
     override fun run() {
-        LOG.log(Level.INFO, "Listening on {0}:{1}", array<Any>(servsock!!.getInetAddress().getHostAddress(), servsock!!.getLocalPort()))
+        LOG.log(Level.INFO, "Listening on {0}:{1}", arrayOf<Any>(servsock!!.getInetAddress().getHostAddress(), servsock!!.getLocalPort()))
         Runtime.getRuntime().addShutdownHook(object : Thread() {
             override fun run() {
                 LOG.log(Level.INFO, "FTP server shutting down...")
@@ -139,7 +139,7 @@ public class FtpServer
                                 out(pw, "200 Switching to ASCII mode.")
                             }
                         } else if (cmd.toUpperCase().startsWith("PORT")) {
-                            val args = cmd.substring(5).split(",")
+                            val args = cmd.substring(5).splitBy(",")
                             val sep = "."
                             val dataAddress = "${args[0]}$sep${args[1]}$sep${args[2]}$sep${args[3]}"
                             val dataPort = (Integer.parseInt(args[4]) * 256) + Integer.parseInt(args[5])
@@ -151,7 +151,7 @@ public class FtpServer
                             //                            String delimeter = "\\x" + Integer.toHexString((int)
                             // payload.charAt(0));
                             val delimeter = Pattern.quote(payload.charAt(0).toString())
-                            val args = payload.substring(1).split(delimeter)
+                            val args = payload.substring(1).splitBy(delimeter)
                             val type = Integer.parseInt(args[0])
                             val dataAddress = args[1]
                             val dataPort = Integer.parseInt(args[2])
@@ -163,7 +163,7 @@ public class FtpServer
                                 it.close()
                             }
                             pasv = ServerSocket(0)
-                            val p = intArray(pasv!!.getLocalPort() / 256, pasv!!.getLocalPort() % 256)
+                            val p = intArrayOf(pasv!!.getLocalPort() / 256, pasv!!.getLocalPort() % 256)
                             val con = java.lang.String.format("%s,%s,%s,%s,%s,%s", h[0].toInt() and 255, h[1].toInt() and 255, h[2].toInt() and 255, h[3].toInt() and 255, p[0] and 255, p[1] and 255)
                             out(pw, "227 Entering Passive Mode ($con).")
                         } else if (cmd.toUpperCase().startsWith("EPSV")) {
@@ -184,7 +184,7 @@ public class FtpServer
                                 out(pw, "213 ${f.length}")
                             }
                         } else if (cmd.toUpperCase().startsWith("MODE")) {
-                            val modes = array("S", "B", "C")
+                            val modes = arrayOf("S", "B", "C")
                             val mode = cmd.substring(5)
                             val has = mode in modes
                             if (has) {
@@ -219,7 +219,7 @@ public class FtpServer
                             val out = PrintWriter(data!!.getOutputStream(), true)
                             val v = query(cwd)
                             val files = LinkedList(v!!.list())
-                            Collections.sort<SimpleVFile>(files, nameComparator)
+                            Collections.sort(files, nameComparator)
                             val executor = Executors.newCachedThreadPool()
                             val lines = arrayOfNulls<String>(files.size()).mapIndexed { i, s ->
                                 executor.submit(object : Callable<String> {
@@ -286,7 +286,7 @@ public class FtpServer
                             out(pw, "550 Permission denied.")
                         } else if (cmd.toUpperCase().startsWith("FEAT")) {
                             out(pw, "211-Features:")
-                            val features = array<String>("MDTM", "PASV")
+                            val features = arrayOf("MDTM", "PASV")
                             Arrays.sort(features)
                             for (feature in features) {
                                 out(pw, ' ' + feature)
@@ -340,13 +340,13 @@ public class FtpServer
                         } else if (cmd.toUpperCase().startsWith("NOOP")) {
                             out(pw, "200 NOOP ok.")
                         } else if (cmd.toUpperCase().startsWith("OPTS")) {
-                            val args = cmd.toUpperCase().substring(5).split(" ")
+                            val args = cmd.toUpperCase().substring(5).splitBy(" ")
                             val opt = args[0]
                             val status = args[1]
                             out(pw, "200 $opt always $status.")
                         } else {
                             LOG.log(Level.WARNING, "Unsupported operation {0}", cmd)
-                            out(pw, "502 ${cmd.split(" ")[0]} not implemented.")
+                            out(pw, "502 ${cmd.splitBy(" ")[0]} not implemented.")
                             //                            out(pw, "500 Unknown command.");
                         }
                     } catch (ex: Exception) {
@@ -364,12 +364,12 @@ public class FtpServer
         }
 
         private fun canonicalize(string: String): String {
-            [suppress("NAME_SHADOWING")]
+            @suppress("NAME_SHADOWING")
             val string = when {
                 string.endsWith(VFile.SEPARATOR) -> string.substring(0, string.length() - 1)
                 else -> string
             }
-            val split = string.split(VFile.SEPARATOR)
+            val split = string.splitBy(VFile.SEPARATOR)
             val pieces = LinkedList<String>()
             for (s in split) {
                 if (s.isEmpty()) {
@@ -398,7 +398,7 @@ public class FtpServer
 
         internal fun toFTPString(file: SimpleVFile): String {
             var spec = '-' // TODO: links
-            val f = array<CharArray>(charArray('r', '-', '-'), charArray('r', '-', '-'), charArray('r', '-', '-')) // RWX: User, Group, Everybody
+            val f = arrayOf(charArrayOf('r', '-', '-'), charArrayOf('r', '-', '-'), charArrayOf('r', '-', '-')) // RWX: User, Group, Everybody
             if (file.isDirectory) {
                 spec = 'd'
                 f[0][1] = 'w'
@@ -430,7 +430,7 @@ public class FtpServer
             return sb.toString()
         }
 
-        throws(javaClass<IOException>())
+        throws(IOException::class)
         internal fun `in`(`in`: BufferedReader): String? {
             val s = `in`.readLine()
             LOG.log(Level.FINE, "<<< {0}", s)

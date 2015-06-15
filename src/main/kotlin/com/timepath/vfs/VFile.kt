@@ -9,7 +9,7 @@ import java.util.regex.Pattern
  * @param <V> Specific type of VFile
  * @author TimePath
  */
-public trait VFile<V : VFile<V>> {
+public interface VFile<V : VFile<V>> {
 
     fun canExecute(): Boolean
 
@@ -85,6 +85,6 @@ public trait VFile<V : VFile<V>> {
         NonNls
         val SEPARATOR: String = "/"
 
-        val SEPARATOR_PATTERN: Pattern = SEPARATOR.toRegex()
+        val SEPARATOR_PATTERN: Pattern = SEPARATOR.toPattern()
     }
 }

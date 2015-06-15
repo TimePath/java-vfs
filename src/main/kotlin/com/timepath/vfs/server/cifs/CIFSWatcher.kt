@@ -20,7 +20,7 @@ import kotlin.platform.platformStatic
  *
  * @author TimePath
  */
-class CIFSWatcher private(port: Int) {
+class CIFSWatcher private constructor(port: Int) {
     private val listeners = LinkedList<FileChangeListener>()
 
     init {
@@ -79,7 +79,7 @@ class CIFSWatcher private(port: Int) {
 
                                 private var header: Int = 0 // \0xFF S M B
 
-                                throws(javaClass<IOException>())
+                                throws(IOException::class)
                                 private fun read(`is`: InputStream): Packet {
                                     val buf = ByteBuffer.allocate(42) // Average CIFS header size
                                     val head = ByteArray(24)

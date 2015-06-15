@@ -13,7 +13,7 @@ import javax.swing.Icon
  *
  * @author TimePath
  */
-public abstract class DelegateProvider protected(protected val data: SimpleVFile) : SimpleVFile() {
+public abstract class DelegateProvider protected constructor(protected val data: SimpleVFile) : SimpleVFile() {
 
     Contract("null -> null")
     protected abstract fun wrap(file: SimpleVFile?): SimpleVFile?
@@ -116,7 +116,7 @@ public abstract class DelegateProvider protected(protected val data: SimpleVFile
 
     override fun removeAll(files: Iterable<SimpleVFile>) = data.removeAll(files)
 
-    throws(javaClass<IOException>())
+    throws(IOException::class)
     override fun extract(dir: File) = data.extract(dir)
 
     override fun fileAdded(file: SimpleVFile) = data.fileAdded(file)

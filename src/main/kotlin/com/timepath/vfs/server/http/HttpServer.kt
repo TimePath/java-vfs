@@ -22,7 +22,7 @@ public class HttpServer(port: Int = 8000, addr: InetAddress? = null)
         // On windows, this prevents firewall warnings. It's also good for security in general
         val loopback = InetAddress.getByName(null) // cannot use java7 InetAddress.getLoopbackAddress().
         servsock = ServerSocket(port, 0, addr ?: loopback)
-        LOG.log(Level.INFO, "Listening on {0}:{1}", array<Any>(servsock.getInetAddress().getHostAddress(), servsock.getLocalPort()))
+        LOG.log(Level.INFO, "Listening on {0}:{1}", arrayOf<Any>(servsock.getInetAddress().getHostAddress(), servsock.getLocalPort()))
         Runtime.getRuntime().addShutdownHook(Thread {
             LOG.info("HTTP server shutting down...")
         })
@@ -54,7 +54,7 @@ public class HttpServer(port: Int = 8000, addr: InetAddress? = null)
                         client.close()
                         break
                     } else if (cmd.startsWith("GET")) {
-                        val args = cmd.substring(4).split(" ")
+                        val args = cmd.substring(4).splitBy(" ")
                         var req = args[0]
                         val http = args[1]
                         if (req == VFile.SEPARATOR) {

@@ -45,7 +45,7 @@ public class SftpServer(NonNls name: String, private val port: Int = 0) : Provid
         sshd!!.setPort(port)
         sshd!!.setKeyPairProvider(SimpleGeneratorHostKeyProvider("hostkey.ser"))
         val fileSystemFactory = object : FileSystemFactory {
-            throws(javaClass<IOException>())
+            throws(IOException::class)
             override fun createFileSystemView(session: Session): FileSystemView {
                 return FileSystemViewAdapter(this@SftpServer)
             }
@@ -108,30 +108,30 @@ public class SftpServer(NonNls name: String, private val port: Int = 0) : Provid
 
         override fun getName() = delegate.name
 
-        throws(javaClass<IOException>())
+        throws(IOException::class)
         override fun getAttributes(followLinks: Boolean): Map<SshFile.Attribute, Any> {
-            return Collections.unmodifiableMap<SshFile.Attribute, Any>(attributes)
+            return Collections.unmodifiableMap(attributes)
         }
 
-        throws(javaClass<IOException>())
+        throws(IOException::class)
         override fun setAttributes(attributes: Map<SshFile.Attribute, Any>) {
             for ((k, v) in attributes.entrySet()) {
                 setAttribute(k, v)
             }
         }
 
-        throws(javaClass<IOException>())
+        throws(IOException::class)
         override fun getAttribute(attribute: SshFile.Attribute, followLinks: Boolean) = attributes[attribute]
 
-        throws(javaClass<IOException>())
+        throws(IOException::class)
         override fun setAttribute(attribute: SshFile.Attribute, value: Any) {
             attributes.put(attribute, value)
         }
 
-        throws(javaClass<IOException>())
+        throws(IOException::class)
         override fun readSymbolicLink() = null
 
-        throws(javaClass<IOException>())
+        throws(IOException::class)
         override fun createSymbolicLink(destination: SshFile) = Unit
 
         override fun getOwner() = delegate.owner
@@ -165,10 +165,10 @@ public class SftpServer(NonNls name: String, private val port: Int = 0) : Provid
 
         override fun delete() = false
 
-        throws(javaClass<IOException>())
+        throws(IOException::class)
         override fun create() = false
 
-        throws(javaClass<IOException>())
+        throws(IOException::class)
         override fun truncate() = Unit
 
         override fun move(destination: SshFile) = false
@@ -182,13 +182,13 @@ public class SftpServer(NonNls name: String, private val port: Int = 0) : Provid
             return sshFiles
         }
 
-        throws(javaClass<IOException>())
+        throws(IOException::class)
         override fun createOutputStream(offset: Long) = null
 
-        throws(javaClass<IOException>())
+        throws(IOException::class)
         override fun createInputStream(offset: Long) = delegate.openStream()
 
-        throws(javaClass<IOException>())
+        throws(IOException::class)
         override fun handleClose() = Unit
     }
 

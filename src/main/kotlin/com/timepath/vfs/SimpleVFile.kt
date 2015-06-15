@@ -20,7 +20,7 @@ import javax.swing.UIManager
  *
  * @author TimePath
  */
-public abstract class SimpleVFile protected() : MutableVFile<SimpleVFile>, ViewableData, FileChangeListener {
+public abstract class SimpleVFile protected constructor() : MutableVFile<SimpleVFile>, ViewableData, FileChangeListener {
     protected val files: MutableMap<String, SimpleVFile>
     private val listeners: MutableCollection<FileChangeListener>
     override var lastModified: Long = System.currentTimeMillis()
@@ -85,8 +85,8 @@ public abstract class SimpleVFile protected() : MutableVFile<SimpleVFile>, Viewa
                 VFile.SEPARATOR_PATTERN.matcher(it).replaceAll("") // Just in case
             }
             val parent = parent
-            return when {
-                parent == null -> path
+            return when (parent) {
+                null -> path
                 else -> "${parent.path}${VFile.SEPARATOR}$path"
             }
         }
@@ -149,7 +149,7 @@ public abstract class SimpleVFile protected() : MutableVFile<SimpleVFile>, Viewa
      * @return the file, or null
      */
     public open fun query(path: String): SimpleVFile? {
-        val split = path.split(VFile.SEPARATOR)
+        val split = path.splitBy(VFile.SEPARATOR)
         if (split.size() == 1) return get(path) // Fast path
         // Compute absolute canonical path
         val stack = LinkedList<String>()
@@ -165,8 +165,8 @@ public abstract class SimpleVFile protected() : MutableVFile<SimpleVFile>, Viewa
             }
         }
         LOG.log(Level.FINE, "Getting {0}", stack)
-        return stack.fold(this : SimpleVFile?) { result, token ->
-            val next = result?.get(token)
+        return stack.fold(this) { result, token ->
+            val next = result[token]
             when (next) {
                 null -> return null
                 else -> next
@@ -220,7 +220,7 @@ public abstract class SimpleVFile protected() : MutableVFile<SimpleVFile>, Viewa
      * @param dir the directory to extract to
      * @throws java.io.IOException
      */
-    throws(javaClass<IOException>())
+    throws(IOException::class)
     public open fun extract(dir: File) {
         val out = File(dir, name)
         if (isDirectory) {
@@ -267,7 +267,7 @@ public abstract class SimpleVFile protected() : MutableVFile<SimpleVFile>, Viewa
     private fun find(NonNls search: String, root: SimpleVFile): List<SimpleVFile> {
         val list = LinkedList<SimpleVFile>()
         for (e in root.list()) {
-            if (e.name.compareToIgnoreCase(search) == 0) {
+            if (e.name.compareTo(search, ignoreCase = true) == 0) {
                 list.add(e)
             }
             if (e.isDirectory) {
@@ -302,18 +302,18 @@ public abstract class SimpleVFile protected() : MutableVFile<SimpleVFile>, Viewa
 
     override fun toString() = name
 
-    public trait FileHandler {
+    public interface FileHandler {
 
-        throws(javaClass<IOException>())
+        throws(IOException::class)
         public fun handle(file: File): Collection<SimpleVFile>?
     }
 
-    public trait FileVisitor {
+    public interface FileVisitor {
 
         public fun visit(file: File, parent: SimpleVFile)
     }
 
-    public trait MissingFileHandler {
+    public interface MissingFileHandler {
 
         public fun handle(parent: SimpleVFile, name: String): SimpleVFile?
     }
@@ -330,7 +330,6 @@ public abstract class SimpleVFile protected() : MutableVFile<SimpleVFile>, Viewa
         var handlers: MutableList<FileHandler> = LinkedList()
             protected set
 
-        SuppressWarnings("WhileLoopReplaceableByForEach")
         private fun locate() {
             val it = ServiceLoader.load(javaClass<ProviderPlugin>()).iterator()
             while (it.hasNext()) {

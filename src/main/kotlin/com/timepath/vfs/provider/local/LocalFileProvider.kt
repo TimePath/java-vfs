@@ -42,7 +42,7 @@ public open class LocalFileProvider(file: File) : LocalFile(file) {
                         SimpleVFile.handlers.forEach {
                             it.handle(file)?.let {
                                 // Defensive copy
-                                it.copyToArray().forEach {
+                                it.toTypedArray().forEach {
                                     merge(it, parent)
                                 }
                             }
@@ -84,7 +84,7 @@ public open class LocalFileProvider(file: File) : LocalFile(file) {
                 // Add all child files, silently ignore duplicates
                 val children = src.list()
                 // Defensive copy
-                for (file in children.copyToArray()) {
+                for (file in children.toTypedArray()) {
                     merge(file, existing)
                 }
             }

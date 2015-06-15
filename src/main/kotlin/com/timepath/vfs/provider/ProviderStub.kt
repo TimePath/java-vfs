@@ -3,7 +3,7 @@ package com.timepath.vfs.provider
 import com.timepath.vfs.SimpleVFile
 import org.jetbrains.annotations.NonNls
 
-public open class ProviderStub protected(NonNls name: String? = null) : SimpleVFile() {
+public open class ProviderStub protected constructor(NonNls name: String? = null) : SimpleVFile() {
 
     override val name: String = when (name) {
         null -> toString()

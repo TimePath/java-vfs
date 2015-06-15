@@ -10,15 +10,14 @@ import java.util.logging.Logger
 import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
 
-public class ZipFileProvider [throws(javaClass<IOException>())](data: ByteArray) : ProviderStub() {
+public class ZipFileProvider @throws(IOException::class) constructor(data: ByteArray) : ProviderStub() {
 
     init {
         val bis = data.inputStream.buffered()
         bis.mark(data.size())
         bis.let { ZipInputStream(it) }.use {
             while (true) {
-                val e: ZipEntry? = it.getNextEntry()
-                if (e == null) break
+                val e = it.getNextEntry() ?: break
                 LOG.log(Level.FINE, "{0}", e)
                 val sizeLong = run {
                     var sizeLong = e.getSize()
@@ -35,7 +34,7 @@ public class ZipFileProvider [throws(javaClass<IOException>())](data: ByteArray)
     }
 
     private fun atPath(path: CharSequence) = VFile.SEPARATOR_PATTERN.split(path).let { split ->
-        (split.size() - 1).indices.fold(this : SimpleVFile) { dir, i ->
+        (0..(split.size() - 1) - 1).fold(this as SimpleVFile) { dir, i ->
             val dirName = split[i]
             dir[dirName] ?: MockFile(dirName).let {
                 dir.add(it)

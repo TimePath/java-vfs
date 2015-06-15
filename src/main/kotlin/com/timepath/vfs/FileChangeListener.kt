@@ -3,7 +3,7 @@ package com.timepath.vfs
 /**
  * @author TimePath
  */
-public trait FileChangeListener {
+public interface FileChangeListener {
 
     public fun fileAdded(file: SimpleVFile)
 
